@@ -1,0 +1,34 @@
+Bestandsbeschrijving Numerus_fixus_2000-[JJJJ].csv
+==================================================
+([JJJJ] = laatst beschikbare jaar)
+
+Soort bestand: tekst met scheidingsteken en kopregel
+Scheidingsteken: ;
+Codepage: ANSI
+
+Veldnaam					Formaat				Primary key
+----------------------------------------	------------------------	-----------
+Inschrijvingsjaar				number(4)			ja
+Brinnummer					string(4)			ja
+Opleidingscode					string(5)			ja
+Opleidingsvorm					string(1) (of number(1))	ja
+Naam instelling op 1 oktober [jaar]		string(70)
+Naam opleiding op 1 oktober [jaar]		string(225)
+Naam opleidingsvorm				string(8)
+Soort hoger onderwijs				string(3)
+Code croho-onderdeel op 1 oktober [jaar]	string(1) (of number(1))
+Naam croho-onderdeel op 1 oktober [jaar]	string(70)
+Capaciteit					number(4)
+Soort fixus					string(10)
+
+
+Koppeling met 1 cijfer HO
+=========================
+
+Velden in 1 cijfer HO				Velden in Numerus_fixus_2000-[JJJJ]
+------------------------------------		-----------------------------------
+Inschrijvingsjaar			----	Inschrijvingsjaar
+Administratienummer OWI (instelling)	----	Brinnummer
+Opleidingscode				----	Opleidingscode
+Opleidingsvorm				----	Opleidingsvorm
+

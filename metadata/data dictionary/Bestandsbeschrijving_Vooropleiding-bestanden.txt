@@ -1,0 +1,57 @@
+Vooropleiding_binnen_HO.asc
+===========================
+Dit bestand bevat alle vooropleidingen binnen het HO van alle personen
+aanwezig in 1 cijfer HO, voor zover van die personen een diploma in het
+hoger onderwijs bekend is. Deze tabel wordt gebruikt ter vulling van de
+velden die betrekking hebben op de vooropleiding binnen het HO.
+
+                                             Startpositie  Aantal posities
+Sectoraal omnummer HO                               1            12
+Categorie                                          13             3
+Bron                                               16             1
+Diplomajaar                                        17             4
+Subcategorie                                       21             2
+Instelling                                         23             4
+Oorspronkelijke (voor)opleidingscode               27             5
+Vestigingsnummer                                   32             2
+
+De velden categorie en subcategorie vormen samen de aggregatiecode die
+wordt gebruikt in het veld Hoogste vooropleiding binnen het HO
+
+Mogelijke waarden van het veld bron:
+ 1 = RASP
+ 2 = VCRI
+ 3 = Studielink - DD (Diploma decentraal geverifieerd bij instelling)
+ 4 = Studielink - ID (Diploma decentraal geverifieerd bij DUO)
+ 5 = Studielink - GD (Diploma centraal geverifieerd bij DUO)
+ 7 = CRIHO
+
+
+Vooropleiding_voor_HO.asc
+===========================
+Dit bestand bevat alle vooropleidingen vóór het HO van alle personen
+aanwezig in 1 cijfer HO, voor zover van die personen een diploma vóór het
+hoger onderwijs bekend is. Deze tabel wordt gebruikt ter vulling van de
+velden die betrekking hebben op de vooropleiding vóór het HO.
+
+                                             Startpositie  Aantal posities
+Sectoraal omnummer HO                               1            12
+Categorie                                          13             3
+Bron                                               16             1
+Diplomajaar                                        17             4
+Subcategorie                                       21             2
+Instelling                                         23             4
+Oorspronkelijke (voor)opleidingscode               27             5
+Gemiddeld eindcijfer VO                            32             3
+Vestigingsnummer                                   35             2
+
+De velden categorie en subcategorie vormen samen de aggregatiecode die
+wordt gebruikt in het veld Hoogste vooropleiding vóór het HO
+
+Mogelijke waarden van het veld bron:
+ 1 = RASP
+ 2 = VCRI
+ 3 = Studielink - DD (Diploma decentraal geverifieerd bij instelling)
+ 4 = Studielink - ID (Diploma decentraal geverifieerd bij DUO)
+ 5 = Studielink - GD (Diploma centraal geverifieerd bij DUO)
+ 6 = ERR / BRON
