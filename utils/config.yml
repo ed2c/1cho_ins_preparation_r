@@ -1,0 +1,21 @@
+vu:
+  data_1cho_starting_cohorts_file_path: "data/00_raw/2022/2023-09-19-15-32-12_ODW204 - VUanalytics EOI Cohorten.zip"
+  data_1cho_enrollments_file_path: "data/00_raw/2022/2023-03-21-16-43-54_ODW205 - VUanalytics 1CHO Inschrijving.zip"
+  metadata_1cho_decoding_files_dir: "data/00_raw/2022/decoding_files/"
+  #dataset_combi_geaggregeerd: "data_model/Opleiding_cohort_EOI.rds"
+  dataset_combi_geaggregeerd: "data_model/AS_CBS_VU_aggr.rds"
+  dataset_instelling_individueel: "data_model/Export_Student_Analytics_2023-02-14_NCO_HO_hashed.rds"
+  dataset_CHO_doorstroom: "data_model/Geslaagden_Cohorten_VSNU.rds"
+  dataset_CHO_doorstroom_gantt: "data_model/Geslaagden_Cohorten_VSNU_geselecteerd.rds"
+  driver: "SQL Server"
+
+synthetic:
+  inherits: instellingsdata
+  dataset_combi_geaggregeerd: "data_model/AS_CBS_VU_aggr_synthetisch.rds"
+  dataset_instelling_individueel: "data_model/Inschrijvingen_instelling_synthetisch.rds"
+  dataset_CHO_doorstroom: "data_model/Geslaagden_Cohorten_VSNU_synthetisch.rds"
+  dataset_CHO_doorstroom_gantt: "data_model/Geslaagden_Cohorten_VSNU_gantt_synthetisch.rds"
+  driver: "SQLServer"
+
+default:
+  inherits: vu
