@@ -13,15 +13,9 @@
 ## enkele Inschrijvings variabelen bepaald: Onderwijsherkomst Soort_eerstejaars.
 ## Het cohortenbestand kan daarna direct aan de analyseset gekoppeld worden.
 ##
-## Afhankelijkheden: Index.R
-##
-## Datasets: Output/1. Ingelezen data/INS_Cohorten.rds
-##           Output/1. Ingelezen data/INS_Schattingen.rds
-##           Output/2. Geprepareerde data/OPL_Opleidingen.rds
-##           Output/2. Geprepareerde data/INS_Inschrijvingen.rds
 ##
 ## Opmerkingen:
-## 1) Gebruik de documentatie van het 1cHO-Cohortenbestand om dit script te
+## 1) Gebruik de Confluence documentatie van het 1cHO-Cohortenbestand om dit script te
 ## begrijpen.
 ## 2) Twee succesvariabelen (uitval opleiding,
 ## diplomarendement herinschrijvers) worden op 2 plaatsen bepaald, nl.
@@ -40,7 +34,7 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Lees alle benodigde bestanden in:
 
-Cohorten <- vvmover::read_file_proj("INS_Cohorten")
+Cohorten <- read_file_proj("INS_Cohorten")
 
 
 ## Lees de tabel met opleidingsspecifieke kenmerken in

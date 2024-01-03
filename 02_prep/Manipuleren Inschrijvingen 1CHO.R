@@ -17,13 +17,22 @@
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Inschrijvingen_1cho <- vvmover::read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
+Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
 
 dfTkoppel_Z08 <- readrds_csv(output = "2. Geprepareerde data/INS_Tkoppel_Z08.rds")
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+## TODO Dit moet naar manipuleren
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  distinct() %>%
+  filter(!is.na(INS_Studentnummer)) %>%
+  mutate(
+    INS_Faculteit = stringi::stri_trans_general(INS_Faculteit, "Latin-ASCII"),
+    INS_Opleidingsnaam_2002 = stringi::stri_trans_general(INS_Opleidingsnaam_2002, "Latin-ASCII")
+  )
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   ## Omzetten naar date zodat we de min en max datum kunnen vinden
@@ -181,19 +190,14 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mutate(INS_Verblijfsjaren_hoger_onderwijs_origineel = INS_Verblijfsjaren_hoger_onderwijs)
 
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## ORIGINEEL: Manipuleren Inschrijvingen Deel 2 - Mapping Tables.R
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#### Mapping tables ####
 
 ## Variabelen transformeren van ja/nee naar TRUE/FALSE
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mutate(
-    INS_Inclusief_UvA = vvconverter::transform_no_yes_to_ft(INS_Inclusief_UvA)
+    INS_Inclusief_UvA = transform_no_yes_to_ft(INS_Inclusief_UvA)
   )
-
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-#### Mapping tables ####
 
 ## Invullen ontbrekende gegevens soort vooropleiding
 ## Vervang bij de vooropleiding codes de NA's door 0
@@ -270,7 +274,7 @@ Inschrijvingen_1cho <- mapping_translate(
   Inschrijvingen_1cho,
   "INS_Vooropleiding_binnen_HO_BRIN",
   "INS_Vooropleiding_binnen_HO_naam",
-  mapping_table_name = "Mapping_VOPL_naam.csv"
+  mapping_table_name = "Mapping_BRIN_Instellingsnaam.csv"
 )
 
 Inschrijvingen_1cho$INS_Hoogste_vooropleiding_naam <- NULL
@@ -278,7 +282,7 @@ Inschrijvingen_1cho <- mapping_translate(
   Inschrijvingen_1cho,
   "INS_Hoogste_vooropleiding_BRIN_1CHO",
   "INS_Hoogste_vooropleiding_naam",
-  mapping_table_name = "Mapping_VOPL_naam.csv"
+  mapping_table_name = "Mapping_BRIN_Instellingsnaam.csv"
 )
 
 Inschrijvingen_1cho$INS_Vooropleiding_voor_HO_postcode <- NULL
@@ -359,10 +363,18 @@ Inschrijvingen_1cho <- mapping_translate(
 
 Inschrijvingen_1cho <- mapping_translate(
   Inschrijvingen_1cho,
+  "DEM_Nationaliteit_1",
+  "DEM_Nationaliteit_1_naam",
+  mapping_table_name = "Mapping_DEM_Nationaliteit.csv"
+)
+
+Inschrijvingen_1cho <- mapping_translate(
+  Inschrijvingen_1cho,
   "DEM_Nationaliteit_2",
   "DEM_Nationaliteit_2_naam",
   mapping_table_name = "Mapping_DEM_Nationaliteit.csv"
 )
+
 Inschrijvingen_1cho <- mapping_translate(
   Inschrijvingen_1cho,
   "DEM_Nationaliteit_3",
@@ -405,7 +417,7 @@ Inschrijvingen_1cho <- mapping_translate(
 )
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-#### INS_Verblijfsjaren, INS_TUssenjaar variabelen ####
+#### INS_Verblijfsjaren, INS_Tussenjaar variabelen ####
 
 ## Maak variabelen DEM_Leeftijd_peildatum_1_oktober_Cat_new,
 ## INS_Verblijfsjaren_wetenschappelijk_onderwijs en
@@ -425,13 +437,15 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
       if_else(INS_Verblijfsjaren_hoger_onderwijs == 0,
               NA_integer_,
               as.integer(INS_Verblijfsjaren_hoger_onderwijs)
-      ),
-    ## De definitie voor verblijfsjaren wordt aangepast,
-    ## omdat het logischer is om vanaf 0 te tellen
-    INS_Verblijfsjaren_wetenschappelijk_onderwijs =
-      INS_Verblijfsjaren_wetenschappelijk_onderwijs - 1,
-    INS_Verblijfsjaren_hoger_onderwijs =
-      INS_Verblijfsjaren_hoger_onderwijs - 1
+      )
+    ##' *INFO* Onderstaande uitgecomment, omdat dit afwijking van standaard definitie is
+    #,
+    # ## De definitie voor verblijfsjaren wordt aangepast,
+    # ## omdat het logischer is om vanaf 0 te tellen
+    # INS_Verblijfsjaren_wetenschappelijk_onderwijs =
+    #   INS_Verblijfsjaren_wetenschappelijk_onderwijs - 1,
+    # INS_Verblijfsjaren_hoger_onderwijs =
+    #   INS_Verblijfsjaren_hoger_onderwijs - 1
   )
 
 ## Deze variabele leidt tot heel veel categorieen omdat dit een aantal is.
@@ -527,6 +541,7 @@ Inschrijvingen_1cho <- mapping_translate(
   KeepOriginal = FALSE
 )
 
+## TODO Herschrijf
 ## Maak variabele INS_Vooropleiding_voor_HO_profiel_standaard_zonder_combinatie,
 ## deze variabele bevat de veel voorkomende variaties
 ## (dus niet: natuur en maatschappij)
