@@ -24,49 +24,43 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Lees alle benodigde bestanden in:
 Bestandspad <- paste0(
-  Sys.getenv("NETWORK_DIR"),
-  "Datasets/1cHO/2022/referentietabellen en documentatie/Dec_isat.asc"
+  config::get("metadata_1cho_decoding_files_dir"), "Dec_isat.asc"
 )
 
-Dec_isat <- read_delim(Bestandspad,
-  col_types = cols(X1 = col_character()),
-  delim = ";",
-  col_names = FALSE
-)
-
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Up to date check
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-up_to_date(
-  bestandspad = Bestandspad,
-  frequentie = 365,
-  contact = "Helmut Matheis",
-  inleesscript = "Inlezen Dec isat.R"
-)
+Dec_isat <- read_fwf(
+  Bestandspad,
+  fwf_widths(c(5, 195)))
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Splits kolom X1 in 2 kolommen en geef de juiste kolomnamen
 Dec_isat <- Dec_isat %>%
-  mutate(
-    INS_Opleidingscode = substr(X1, 1, 5),
-    INS_Opleidingsnaam = trimws(substr(X1, 6, 200))
-  ) %>%
-  select(-X1)
+  rename(
+    INS_Opleidingscode = X1,
+    INS_Opleidingsnaam = X2
+  )
 
-
+## Verander kolomnamen voor gebruik als mapping table
+Dec_isat <- Dec_isat %>%
+  rename(from = INS_Opleidingscode,
+         to = INS_Opleidingsnaam)
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## Bewaar bestand in de versies die als mapping-tables gebruikt worden
-## Verander kolomnamen (to, from) en kopieer tabellen in map Mapping Tables.
-vvmover::write_file_proj(Dec_isat, "Mapping_INS_Opleidingscode_actueel_INS_Opleidingsnaam", save_csv = TRUE)
-vvmover::write_file_proj(Dec_isat, "Mapping_INS_Examen_bachelor_opleidingscode_actueel_INS_Examen_bachelor_opleidingsnaam", save_csv = TRUE)
 
-vvmover::write_file_proj(Dec_isat, "INS_Dec_isat")
+write_file_proj(Dec_isat,
+                name = "Mapping_INS_Opleidingscode_actueel_INS_Opleidingsnaam.csv",
+                full_dir = Sys.getenv("MAP_TABLE_DIR"),
+                extensions = "csv")
+
+write_file_proj(Dec_isat,
+                name = "Mapping_INS_Examen_bachelor_opleidingscode_actueel_INS_Examen_bachelor_opleidingsnaam.csv",
+                full_dir = Sys.getenv("MAP_TABLE_DIR"),
+                extensions = "csv")
+
 
 clear_script_objects()

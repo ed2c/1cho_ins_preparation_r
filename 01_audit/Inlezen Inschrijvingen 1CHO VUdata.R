@@ -22,14 +22,7 @@
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Lees alle benodigde bestanden in:
-bestandspad <- get_recent_file(
-  paste0(
-    Sys.getenv("NETWORK_DIR"),
-    "Datasets/MIVU/sftp_download/"
-  ),
-  "ODW205 - VUanalytics 1CHO Inschrijving",
-  date_type = "filename_ymd"
-)
+bestandspad <- config::get("data_1cho_enrollments_file_path")
 
 ## Lees het bestand Inschrijvingen in uit het zip-bestand
 Inschrijvingen_1cho <- unzip_read_delim(
@@ -68,17 +61,10 @@ Inschrijvingen_1cho <- wrapper_translate_colnames_documentation(
   Inschrijvingen_1cho_naming
 )
 
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  distinct() %>%
-  filter(!is.na(INS_Studentnummer)) %>%
-  mutate(
-    INS_Faculteit = stringi::stri_trans_general(INS_Faculteit, "Latin-ASCII"),
-    INS_Opleidingsnaam_2002 = stringi::stri_trans_general(INS_Opleidingsnaam_2002, "Latin-ASCII")
-  )
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-vvmover::write_file_proj(Inschrijvingen_1cho, "INS_Inschrijvingen_1CHO_VUdata")
+write_file_proj(Inschrijvingen_1cho, "INS_Inschrijvingen_1CHO_VUdata")
 
 clear_script_objects()

@@ -22,17 +22,8 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Lees alle benodigde bestanden in:
 
-## Lees het bestand Cohorten_VUDATA in uit de datasets folder
-## TODO: Dit kan beter nu als test
-# Cohorten_VUDATA <- unzip_read_delim(paste0(Sys.getenv("NETWORK_DIR"),
-# "Datasets/MIVU/test/2020-01-29-10-38-25_ODW204 - VUanalytics EOI Cohorten"))
-
-sFile_path_Cohorten_VUDATA <-
-  get_recent_file(
-    paste0(Sys.getenv("NETWORK_DIR"), "Datasets/MIVU/sftp_download/"),
-    "Cohorten",
-    date_type = "filename_ymd"
-  )
+## TODO Evaluate the usage of zip files later on
+sFile_path_Cohorten_VUDATA <- config::get("data_1cho_starting_cohorts_file_path")
 
 dfCohorten_VUDATA <- unzip_read_delim(sFile_path_Cohorten_VUDATA, NULL,
   ",",
@@ -59,18 +50,13 @@ dfCohorten_VUDATA <- unzip_read_delim(sFile_path_Cohorten_VUDATA, NULL,
 ## Zorg dat de examenwaardes lower-case zijn
 dfCohorten_VUDATA <- dfCohorten_VUDATA %>% mutate_at(vars(starts_with("EX")), tolower)
 
+## TODO Dit moet naar manipuleren
 ## Filter dubbele waarden uit het bestand en selecteer alleen VU-studenten
 dfCohorten_VUDATA <- dfCohorten_VUDATA %>%
   filter(
     INSTCODEACT == "VU",
     !is.na(STUDENT_CD)
   ) %>%
-  ## Selecteer alleen versie 1, omdat er anders dubbelingen ontstaan.
-  ## Vanaf c.a. maart 2018 wordt deze variabele als het goed is niet meer
-  ## geleverd omdat MIVU deze selectie zelf al maakt. Als hier een fout-
-  ## melding ontstaat omdat die variabele ontbreekt is dat zoals verwacht
-  ## en kan het filter op versie verwijderd worden.
-  # VERSIE == 1) %>%
   distinct()
 
 ## voorkom dubbelingen in groepeer variabelen
@@ -84,24 +70,10 @@ dfCohorten_VUDATA <- dfCohorten_VUDATA %>%
   distinct(across(all_of(group_vars)), .keep_all = TRUE)
 
 ## Lees het namingbestand in
-## TODO: Maak het documentatiebestand in de folder XX. Documentatie/
-# dfCohorten_VUDATA_naming <- read_documentation("Documentatie_dfCohorten_VUDATA.csv")
-
 dfCohorten_VUDATA_naming <- read_documentation(
-  "Documentatie_cohorten_VUDATA_bestand.csv",
-  readr = TRUE
+  "Documentatie_cohorten_VUDATA_bestand.csv"
 )
 
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Up to date check
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-up_to_date(
-  bestandspad = sFile_path_Cohorten_VUDATA,
-  frequentie = 365,
-  contact = "Helmut Matheis",
-  inleesscript = "Inlezen Cohorten VUDATA.R"
-)
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## X. ASSERTIONS ####
@@ -118,22 +90,9 @@ dfCohorten_VUDATA <- dfCohorten_VUDATA %>%
   distinct()
 
 
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-## X. ASSERTIONS ####
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-assert_no_duplicates_in_group(
-  dfCohorten_VUDATA, c(
-    "INS_Studentnummer",
-    "INS_Eerste_jaar_opleiding_en_instelling",
-    "INS_Opleidingscode_actueel"
-  )
-)
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-vvmover::write_file_proj(dfCohorten_VUDATA, "INS_Cohorten")
+write_file_proj(dfCohorten_VUDATA, "INS_Cohorten")
 
 clear_script_objects()
