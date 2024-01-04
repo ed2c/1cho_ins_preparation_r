@@ -34,12 +34,6 @@ Dec_isat <- read_fwf(
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Splits kolom X1 in 2 kolommen en geef de juiste kolomnamen
-Dec_isat <- Dec_isat %>%
-  rename(
-    INS_Opleidingscode = X1,
-    INS_Opleidingsnaam = X2
-  )
 
 ## Verander kolomnamen voor gebruik als mapping table
 Dec_isat <- Dec_isat %>%
