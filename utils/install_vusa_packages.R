@@ -22,18 +22,17 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## Bepaal packages en run package voor package
-## TODO: Via git gaan dependencies goed, maar install iedere keert kost tijd
+## TODO: Via git gaan dependencies goed, maar install iedere keer kost tijd
 ##' *INFO* Zie https://vustudentanalytics.atlassian.net/wiki/spaces/SWPRJ/pages/3776905719/21.02.2023
-## NB: Volgorde moet rekening houden met dependencies, begin met vvcommander
+##' *INFO*  Volgorde moet rekening houden met dependencies, begin met vvcommander
+## TODO: Niet nodig om constant te runnen
 sa_packages <- c("vvcommander", "vvauditor", "vvmover", "vvconverter", "vvsculptor", "vusa")
 
-# suppressMessages(purrr::walk(sa_packages,
-#                              ~ ifelse(. == "vusa",
-#                                       renv::install(paste0("bitbucket::vustudentanalytics/", .), prompt = FALSE, rebuild = TRUE),
-#                                       renv::install(paste0("bitbucket::vustudentanalytics/", ., "@main"), prompt = FALSE, rebuild = TRUE)
-#                              )))
-
-purrr::walk(sa_packages, ~library(., character.only = TRUE, warn.conflicts = FALSE))
+suppressMessages(purrr::walk(sa_packages,
+                             ~ ifelse(. == "vusa",
+                                      renv::install(paste0("bitbucket::vustudentanalytics/", .), prompt = FALSE, rebuild = TRUE),
+                                      renv::install(paste0("bitbucket::vustudentanalytics/", ., "@main"), prompt = FALSE, rebuild = TRUE)
+                             )))
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## RUIM OP ####
