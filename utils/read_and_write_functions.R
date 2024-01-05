@@ -769,7 +769,7 @@ read_file_proj <- function(
 
 write_file_proj <- function(
     object,
-    name,
+    name = NULL,
     settings_df = write_config_proj(),
     settings_type = NULL,
     sub_dir = NA_character_,
@@ -786,6 +786,11 @@ write_file_proj <- function(
     fst_compress = 100,
     ...
 ) {
+
+  ## Set the object name to the file name if not given
+  if (is.null(name)) {
+    name <- deparse(substitute(object))
+  }
 
   ## Get the script path relative to the working directory
   script_path <- stringr::str_remove(this.path::this.path(), paste0(getwd(), "/"))
