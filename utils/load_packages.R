@@ -21,6 +21,7 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Basis_packages <- c(
+  "readxl",         ## Gebruikt om excel (.xls and .xlsx) bestanden in te lezen.
   "janitor",        ## Gebruikt om namen op te schonen van speciale tekens.
   "lubridate",      ## Gebruikt om te werken met data en tijden.
   "purrr",          ## Gebruikt om met functies and vectoren te werken.
