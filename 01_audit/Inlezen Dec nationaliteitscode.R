@@ -25,63 +25,42 @@
 
 ## Lees alle benodigde bestanden in:
 Bestandspad <- paste0(
-  Sys.getenv("NETWORK_DIR"),
-  "Datasets/1cHO/2022/referentietabellen en documentatie/Dec_nationaliteitscode.asc"
+  config::get("metadata_1cho_decoding_files_dir"), "Dec_nationaliteitscode.asc"
 )
 
-Dec_nationaliteitscode <- read_delim(Bestandspad,
-  col_types = cols(X1 = col_character()),
-  delim = ";",
-  col_names = FALSE,
+Dec_nationaliteitscode <- read_fwf(
+  Bestandspad,
+  fwf_widths(c(4, 50, 1, 12, 2, 31)),
   locale = locale(encoding = "windows-1252")
-)
-
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Up to date check
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-up_to_date(
-  bestandspad = Bestandspad,
-  frequentie = 365,
-  contact = "Helmut Matheis",
-  inleesscript = "Dec nationaliteitscode.R"
-)
+  )
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
+## Bestandsbeschrijving_Dec-bestanden.txt bevat uitleg voor de inhoud van de kolommen
 
 ## Verwijder accenten en splits kolom X1 in 2 kolommen
 Dec_nationaliteitscode <- Dec_nationaliteitscode %>%
   ## Verwijderen van accenten
-  mutate_at(
-    c("X1"),
+  mutate(across(
+    everything(),
     ~ stringi:::stri_trans_general(str = ., id = "Latin-ASCII")
+  )) %>%
+  ## Splits kolom X1 in 2 kolommen
+  rename(
+    from = X1,
+    to = X2
   ) %>%
-  ## Splits kolom X1 in 6 kolommen
-  ## TO DO: Debug kolom 3 t/m 6, nu leeg
-  mutate(
-    DEM_Nationaliteit_code = str_sub(X1, 1, 4),
-    DEM_Nationaliteit_naam = trimws(str_sub(X1, 5, 50)),
-    DEM_Etniciteit_kort = str_sub(X1, 55, 1),
-    DEM_Etniciteit_kort_naam = trimws(str_sub(X1, 56, 12)),
-    DEM_Etniciteit_lang = substr(X1, 68, 2),
-    DEM_Etniciteit_lang_naam = trimws(substr(X1, 70, 32))
-  ) %>%
-  ## Verwijder kolom X1
-  select(-X1)
-
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  select(from, to)
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-saverds_csv(Dec_nationaliteitscode, "DEM_Dec_nationaliteitscode", save_csv = TRUE)
+write_file_proj(Dec_nationaliteitscode,
+                name = "Mapping_DEM_Nationaliteit_code_DEM_Nationaliteit_naam",
+                full_dir = Sys.getenv("MAP_TABLE_DIR"),
+                extensions = "csv")
 
 clear_script_objects()

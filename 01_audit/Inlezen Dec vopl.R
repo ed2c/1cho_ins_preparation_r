@@ -29,17 +29,19 @@ Bestandspad <- paste0(
 )
 
 Dec_vopl <- read_fwf(Bestandspad,
-                     fwf_widths(c(5, 200)))
+                     fwf_widths(c(5, 200)),
+                     locale = locale(encoding = "windows-1252"))
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Bestandsbeschrijving_Dec-bestanden.txt bevat uitleg voor de inhoud van de kolommen
 
 ## Splits kolom X1 in 2 kolommen en geef de juiste kolomnamen
 Dec_vopl <- Dec_vopl %>%
   ## Verwijderen van accenten
   mutate(across(
-    c("X1", "X2"),
+    everything(),
     ~ stringi:::stri_trans_general(str = ., id = "Latin-ASCII")
   )) %>%
   ## Splits kolom X1 in 2 kolommen
@@ -54,7 +56,7 @@ Dec_vopl <- Dec_vopl %>%
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 write_file_proj(Dec_vopl,
-                name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_soort",
+                name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam",
                 full_dir = Sys.getenv("MAP_TABLE_DIR"),
                 extensions = "csv")
 

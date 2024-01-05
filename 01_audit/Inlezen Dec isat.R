@@ -29,16 +29,27 @@ Bestandspad <- paste0(
 
 Dec_isat <- read_fwf(
   Bestandspad,
-  fwf_widths(c(5, 195)))
+  fwf_widths(c(5, 195)),
+  locale = locale(encoding = "windows-1252")
+  )
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Bestandsbeschrijving_Dec-bestanden.txt bevat uitleg voor de inhoud van de kolommen
 
 ## Verander kolomnamen voor gebruik als mapping table
 Dec_isat <- Dec_isat %>%
-  rename(from = INS_Opleidingscode,
-         to = INS_Opleidingsnaam)
+  ## Verwijderen van accenten
+  mutate(across(
+    everything(),
+    ~ stringi:::stri_trans_general(str = ., id = "Latin-ASCII")
+  )) %>%
+  ## Splits kolom X1 in 2 kolommen
+  rename(
+    from = X1,
+    to = X2
+  )
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
@@ -47,14 +58,8 @@ Dec_isat <- Dec_isat %>%
 ## Bewaar bestand in de versies die als mapping-tables gebruikt worden
 
 write_file_proj(Dec_isat,
-                name = "Mapping_INS_Opleidingscode_actueel_INS_Opleidingsnaam.csv",
+                name = "Mapping_INS_Opleidingscode_actueel_INS_Opleidingsnaam_2002",
                 full_dir = Sys.getenv("MAP_TABLE_DIR"),
                 extensions = "csv")
-
-write_file_proj(Dec_isat,
-                name = "Mapping_INS_Examen_bachelor_opleidingscode_actueel_INS_Examen_bachelor_opleidingsnaam.csv",
-                full_dir = Sys.getenv("MAP_TABLE_DIR"),
-                extensions = "csv")
-
 
 clear_script_objects()
