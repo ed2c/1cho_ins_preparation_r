@@ -20,7 +20,7 @@ INS_Examen_na_7_jaar;EX7;TRUE;character;85,5657553;;;;FALSE;
 INS_Examen_na_8_jaar;EX8;TRUE;character;97,9171317;;;;FALSE;
 INS_Examen_na_9_jaar;EX9;TRUE;character;100;;;;FALSE;
 ;EX10;TRUE;character;100;;;;FALSE;We mogen niet meer dan 10 jaar terug
-INS_Soort_eerstejaars;EJR;TRUE;numeric;0;;;;FALSE;
+INS_Soort_eerstejaars_code;EJR;TRUE;numeric;0;;;;FALSE;
 ;INDACTIEF;FALSE;;0;;;;FALSE;
 ;HOOP;FALSE;;0;;;;FALSE;
 ;OPLFASE;FALSE;;0;;;;FALSE;
