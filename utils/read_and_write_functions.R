@@ -1,4 +1,6 @@
 
+## TODO file.path gebruiken
+
 #' Read Configuration Project
 #'
 #' This function is responsible for reading and saving configurations for a project. It retrieves

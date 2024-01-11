@@ -1,6 +1,10 @@
+
 vu:
-  data_1cho_starting_cohorts_file_path: "data/00_raw/2022/2023-09-19-15-32-12_ODW204 - VUanalytics EOI Cohorten.zip"
-  data_1cho_enrollments_file_path: "data/00_raw/2022/2023-03-21-16-43-54_ODW205 - VUanalytics 1CHO Inschrijving.zip"
+  year: 2022
+  data_1cho_starting_cohorts_rel_file_path: "2023-09-19-15-32-12_ODW204 - VUanalytics EOI Cohorten.zip"
+  data_1cho_enrollments_rel_file_path: "2023-03-21-16-43-54_ODW205 - VUanalytics 1CHO Inschrijving.zip"
+  data_1cho_starting_cohorts_file_path: !expr file.path("data/00_raw", year, data_1cho_starting_cohorts_rel_file_path)
+  data_1cho_enrollments_file_path: !expr file.path("data/00_raw", year, data_1cho_enrollments_rel_file_path)
   metadata_1cho_decoding_files_dir: "data/00_raw/2022/decoding_files/"
   metadata_institution_name: "VU"
   metadata_institution_BRIN: "21PL"
