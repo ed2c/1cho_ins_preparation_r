@@ -36,11 +36,9 @@
 
 Cohorten <- read_file_proj("INS_Cohorten")
 
-
-## Lees de tabel met opleidingsspecifieke kenmerken in
-Opleidingen <- readrds_csv(output = "2. Geprepareerde data/OPL_Opleidingen.rds")
-
-dfTkoppel_Z08 <- readrds_csv(output = "2. Geprepareerde data/INS_Tkoppel_Z08.rds")
+## Lees CROHO in voor de nominale studieduur
+CROHO_per_jaar <- read_file_proj("CROHO_per_jaar",
+                        dir = "02_prepared")
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## X. ASSERTIONS ####
@@ -549,13 +547,14 @@ assert_no_duplicates_in_group(Cohorten, c(
 ## - SUC_Doorstroom_van_bachelor_naar_master_vu_elders_cohorten
 
 ## Selecteer per studiejaar, per opleiding de nominale studieduur
-Opleidingen <- Opleidingen %>%
+CROHO_per_jaar <- CROHO_per_jaar %>%
   select(
-    INS_Inschrijvingsjaar,
-    INS_Opleidingsnaam_2002,
-    OPL_Nominale_studieduur
+    OPL_Opleidingsnaam_CROHO,
+    INS_Opleidingscode_actueel,
+    OPL_Nominale_studieduur,
+    OPL_Academisch_jaar
   ) %>%
-  mutate(OPL_Nominale_studieduur = as.integer(OPL_Nominale_studieduur)) %>%
+  ## Verwijder dubbele waarden (die onstaan door opleidingsvorm (voltijd en deeltijd))
   distinct()
 
 ## Koppel de nominale studeduur aan Cohorten
@@ -563,15 +562,14 @@ Cohorten <- Cohorten %>%
   mapping_translate(current = "INS_Opleidingscode_actueel", new = "INS_Opleidingsnaam_2002")
 
 Cohorten <- Cohorten %>%
-  left_join(Opleidingen,
-    by = c(
-      "INS_Eerste_jaar_opleiding_en_instelling" =
-        "INS_Inschrijvingsjaar",
-      "INS_Opleidingsnaam_2002" =
-        "INS_Opleidingsnaam_2002"
-    )
-  ) %>%
-  select(-INS_Opleidingsnaam_2002)
+  left_join(CROHO_per_jaar,
+            by = c(
+              "INS_Eerste_jaar_opleiding_en_instelling" =
+                "OPL_Academisch_jaar",
+              "INS_Opleidingscode_actueel"
+            )
+  )
+
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## Controleer of er duplicaten zijn ontstaan
@@ -975,44 +973,17 @@ Cohorten <- Cohorten %>%
 ## 2D. BEWERKEN: INSCHRIJVINGSVARIABELEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## NOTE: hier raken wij INS_Soort_eerstejaars data kwijt, alles NA
-
-
-## Bepaal de volgende inschrijvingsvariabelen: Onderwijsherkomst en
-## Soort_eerstejaars
-## - INS_Onderwijsherkomst
-## - INS_Soort_eerstejaars
-
-## Bepaal variabelen: Onderwijsherkomst en Soort_eerstejaars
 Cohorten <- Cohorten %>%
-  mutate(
-    INS_Onderwijsherkomst =
-      case_when(
-        INS_Soort_eerstejaars == 1 ~
-          "Buiten HO",
-        INS_Soort_eerstejaars == 2 ~
-          "HBO",
-        INS_Soort_eerstejaars == 3 ~
-          "Universiteit NL",
-        INS_Soort_eerstejaars == 4 ~
-          "VU"
-      )
-  ) %>%
-  mutate(
-  INS_Soort_eerstejaars =
-    case_when(
-      INS_Soort_eerstejaars == 1 ~
-        "EHO",
-      INS_Soort_eerstejaars == 2 ~
-        "EWO",
-      INS_Soort_eerstejaars == 3 ~
-        "EI",
-      INS_Soort_eerstejaars == 4 ~
-        "EOI"
-    )
-)
+  mapping_translate("INS_Soort_eerstejaars_code", "INS_Onderwijs_herkomst_cat")
 
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Cohorten <- Cohorten %>%
+  mapping_translate("INS_Soort_eerstejaars_code", "INS_Soort_eerstejaars_cat")
+
+
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## BEWAAR & RUIM OP ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 ## Controleer of er duplicaten zijn ontstaan
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
@@ -1020,38 +991,6 @@ assert_no_duplicates_in_group(Cohorten, c(
   "INS_Opleidingscode_actueel"
 ))
 
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2E. BEWERKEN: INS_Opleidingscode_Z08 ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-dfTkoppel_Z08_code <- dfTkoppel_Z08 %>%
-  select(INS_Opleidingscode_actueel, INS_Opleidingscode_Z08)
-
-## Voeg Z08-Code toe om te koppelen in opbouw AS
-Cohorten <- Cohorten %>%
-  strict_left_join(dfTkoppel_Z08_code, by = c("INS_Opleidingscode_actueel")) %>%
-  ## Make sure there is one row per EOI, per dfTkoppel_Z08_code per student
-  filter(row_number() == 1,
-         .by = c(INS_Studentnummer, INS_Opleidingscode_Z08,
-                 INS_Eerste_jaar_opleiding_en_instelling))
-
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-## Controleer of er duplicaten zijn ontstaan
-assert_no_duplicates_in_group(Cohorten, c(
-  "INS_Studentnummer",
-  "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_Z08"
-))
-
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## BEWAAR & RUIM OP ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-vvmover::write_file_proj(Cohorten, "INS_Cohorten")
+write_file_proj(Cohorten, "INS_Cohorten")
 
 clear_script_objects()
