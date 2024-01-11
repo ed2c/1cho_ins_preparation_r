@@ -46,10 +46,6 @@ CROHO <- CROHO %>%
   ## Filter dubbele waarden uit het bestand
   distinct()
 
-## Mocht het nodig zijn om CROHO voor VU opleidingen te krijgen
-# CROHO_VU <- CROHO %>%
-#   filter(Instellingscode == "21PL", BRIN_volgnummer == 0)
-
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
