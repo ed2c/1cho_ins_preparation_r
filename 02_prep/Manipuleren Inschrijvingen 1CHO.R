@@ -200,12 +200,14 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 
 ## TODO Zou dit niet een mapping table moeten zijn en 2 variabelen (_code en _naam)
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mapping_translate(
-  "INS_Opleidingsvorm",
-  "INS_Opleidingsvorm_naam"
-)
-
-
+  mutate(
+    INS_Opleidingsvorm =
+      recode(INS_Opleidingsvorm,
+             "Voltijd" = 1,
+             "Deeltijd" = 2,
+             "Duaal" = 3
+      )
+  )
 
 ## Invullen ontbrekende gegevens soort vooropleiding
 ## Vervang bij de vooropleiding codes de NA's door 0
@@ -216,7 +218,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     INS_Hoogste_vooropleiding_code_1CHO = replace_na(INS_Hoogste_vooropleiding_code_1CHO, 0)
   )
 
-Inschrijvingen_1cho$INS_Vooropleiding_binnen_HO_sector <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
     "INS_Vooropleiding_binnen_HO_code",
@@ -224,7 +225,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
   )
 
-Inschrijvingen_1cho$INS_Vooropleiding_voor_HO_profiel <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
     "INS_Vooropleiding_voor_HO_code",
@@ -232,8 +232,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
   )
 
-# The column already exists, so we replace
-Inschrijvingen_1cho$INS_Vooropleiding_binnen_HO_soort <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
     "INS_Vooropleiding_binnen_HO_code",
@@ -241,7 +239,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
   )
 
-Inschrijvingen_1cho$INS_Vooropleiding_voor_HO_soort <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
     "INS_Vooropleiding_voor_HO_code",
@@ -249,7 +246,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
   )
 
-Inschrijvingen_1cho$INS_Hoogste_vooropleiding_soort <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Hoogste_vooropleiding_code_1CHO",
@@ -257,11 +253,10 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
 )
 
-Inschrijvingen_1cho$INS_Hoogste_vooropleiding_cat <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Hoogste_vooropleiding_code_1CHO",
-  "INS_Hoogste_vooropleiding_cat",
+  "INS_Hoogste_vooropleiding_nieuw_cat",
   mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_cat.csv"
 )
 
@@ -269,7 +264,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 #### BRIN data koppelen ####
 # Naam van de Vooropleiding invullen gebaseerd op de BRIN nummer
 
-Inschrijvingen_1cho$INS_Vooropleiding_voor_HO_BRIN_naam <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Vooropleiding_voor_HO_BRIN",
@@ -277,7 +271,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Instellingsnaam.csv"
 )
 
-Inschrijvingen_1cho$INS_Vooropleiding_binnen_HO_BRIN_naam <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Vooropleiding_binnen_HO_BRIN",
@@ -285,7 +278,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Instellingsnaam.csv"
 )
 
-Inschrijvingen_1cho$INS_Hoogste_vooropleiding_naam <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Hoogste_vooropleiding_BRIN_1CHO",
@@ -293,7 +285,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Instellingsnaam.csv"
 )
 
-Inschrijvingen_1cho$INS_Vooropleiding_voor_HO_postcode <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Vooropleiding_voor_HO_BRIN",
@@ -301,7 +292,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Postcode.csv"
 ) %>% mutate(INS_Vooropleiding_voor_HO_postcode = as.double(INS_Vooropleiding_voor_HO_postcode))
 
-Inschrijvingen_1cho$INS_Vooropleiding_binnen_HO_postcode <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Vooropleiding_binnen_HO_BRIN",
@@ -309,7 +299,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Postcode.csv"
 ) %>% mutate(INS_Vooropleiding_binnen_HO_postcode = as.double(INS_Vooropleiding_binnen_HO_postcode))
 
-Inschrijvingen_1cho$INS_Hoogste_vooropleiding_postcode <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Hoogste_vooropleiding_BRIN_1CHO",
@@ -317,7 +306,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Postcode.csv"
 ) %>% mutate(INS_Hoogste_vooropleiding_postcode = as.double(INS_Hoogste_vooropleiding_postcode))
 
-Inschrijvingen_1cho$INS_Vooropleiding_voor_HO_plaats <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Vooropleiding_voor_HO_BRIN",
@@ -325,7 +313,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Plaats.csv"
 )
 
-Inschrijvingen_1cho$INS_Vooropleiding_binnen_HO_plaats <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Vooropleiding_binnen_HO_BRIN",
@@ -333,7 +320,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Plaats.csv"
 )
 
-Inschrijvingen_1cho$INS_Hoogste_vooropleiding_plaats <- NULL
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Hoogste_vooropleiding_BRIN_1CHO",
@@ -406,10 +392,8 @@ Inschrijvingen_1cho <- mapping_category(
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
-    "INS_Soort_inschrijving_1CHO",
-    "INS_Soort_inschrijving_1CHO",
-    mapping_table_name = "Mapping_Soort_inschrijving_1CHO_code_Soort_inschrijving_omschrijving.csv",
-    KeepOriginal = FALSE
+    "INS_Soort_inschrijving_1CHO_code",
+    "INS_Soort_inschrijving_1CHO_cat"
   )
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
@@ -539,16 +523,14 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
     "INS_Vooropleiding_voor_HO_profiel_standaard",
-    "INS_Vooropleiding_voor_HO_profiel_standaard",
-    mapping_table_name = "Mapping_INS_Profiel_omschrijving_Profiel_afkoring.csv",
-    KeepOriginal = FALSE
+    "INS_Vooropleiding_voor_HO_profiel_standaard_afk",
+    mapping_table_name = "Mapping_INS_Profiel_omschrijving_Profiel_afkoring.csv"
 )
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
     "INS_Vooropleiding_voor_HO_profiel_standaard_alleen_VWO",
-    "INS_Vooropleiding_voor_HO_profiel_standaard_alleen_VWO",
-    mapping_table_name = "Mapping_INS_Profiel_omschrijving_Profiel_afkoring.csv",
-    KeepOriginal = FALSE
+    "INS_Vooropleiding_voor_HO_profiel_standaard_alleen_VWO_afk",
+    mapping_table_name = "Mapping_INS_Profiel_omschrijving_Profiel_afkoring.csv"
 )
 
 ## Maak variabele INS_Vooropleiding_voor_HO_profiel_standaard_zonder_combinatie,
