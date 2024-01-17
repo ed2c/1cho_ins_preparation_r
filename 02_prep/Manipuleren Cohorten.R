@@ -7,6 +7,8 @@
 ## Contact: vu-analytics@vu.nl
 ## Verspreiding buiten de VU: Ja
 ##
+
+##'*INFO* See metadata/data_dictionary/Bestandsbeschrijving EOIcohort_VSNU _1cH2021.docx
 ## Doel: In dit script worden verscheidene succesvariabelen gedefinieerd op
 ## basis van herinschrijvings -en examengegevens uit het Cohortenbestand
 ## (waaronder doorstroom en succes binnen en buiten de VU). Bovendien worden
@@ -824,142 +826,48 @@ Cohorten <- Cohorten %>%
 ## l	master behaald zelfde instelling
 ## p	master behaald andere instelling
 Cohorten <- Cohorten %>%
-  ## Maak nieuwe variabele: SUC_Diploma_ho_gelijke_fase_cohorten
-  mutate(
-    SUC_Diploma_ho_gelijke_fase_cohorten =
-      case_when(
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("a", "b") ~
-          "VU - Bachelordiploma - EOI-opleiding",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("c", "d") ~
-          "VU - Bachelordiploma - Andere opleiding - Zelfde HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("e", "f") ~
-          "VU - Bachelordiploma - Andere opleiding - Ander HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("g", "h") ~
-          "Universiteit NL - Bachelordiploma - Zelfde HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("i", "j") ~
-          "Universiteit NL - Bachelordiploma - Ander HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("l") ~
-          "VU - Masterdiploma - Geen bachelordiploma",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("p") ~
-          "Universiteit NL - Masterdiploma - Geen bachelordiploma",
-        INS_BaMa == "M" &
-          INS_Examen_gelijke_fase %in% c("a", "b") ~
-          "VU - Masterdiploma - EOI-opleiding",
-        INS_BaMa == "M" &
-          INS_Examen_gelijke_fase %in% c("c", "d") ~
-          "VU - Masterdiploma - Andere opleiding - Zelfde HOOP-gebied",
-        INS_BaMa == "M" &
-          INS_Examen_gelijke_fase %in% c("e", "f") ~
-          "VU - Masterdiploma - Andere opleiding - Ander HOOP-gebied",
-        INS_BaMa == "M" &
-          INS_Examen_gelijke_fase %in% c("g", "h") ~
-          "Universiteit NL - Masterdiploma - Zelfde HOOP-gebied",
-        INS_BaMa == "M" &
-          INS_Examen_gelijke_fase %in% c("i", "j") ~
-          "Universiteit NL - Masterdiploma - Ander HOOP-gebied",
-        INS_Examen_gelijke_fase %in% c("k") ~
-          "HBO - Diploma",
-        INS_Examen_gelijke_fase %in% c("x") ~
-          "Geen diploma"
-      )
-  ) %>%
-  ## Maak nieuwe variabele: SUC_Diploma_ho_ongelijke_fase_cohorten
-  mutate(
-    SUC_Diploma_ho_ongelijke_fase_cohorten =
-      case_when(
-        INS_BaMa == "B" &
-          INS_Examen_ongelijke_fase %in% c("a", "b") ~
-          "VU - Masterdiploma - EOI-opleiding",
-        INS_BaMa == "B" &
-          INS_Examen_ongelijke_fase %in% c("c", "d") ~
-          "VU - Masterdiploma - Andere opleiding - Zelfde HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_ongelijke_fase %in% c("e", "f") ~
-          "VU - Masterdiploma - Andere opleiding - Ander HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_ongelijke_fase %in% c("g", "h") ~
-          "Universiteit NL - Masterdiploma - Zelfde HOOP-gebied",
-        INS_Examen_ongelijke_fase %in% c("i", "j") ~
-          "Universiteit NL - Masterdiploma - Ander HOOP-gebied",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("l") ~
-          "VU - Masterdiploma - Geen bachelordiploma",
-        INS_BaMa == "B" &
-          INS_Examen_gelijke_fase %in% c("p") ~
-          "Universiteit NL - Masterdiploma - Geen bachelordiploma",
-        INS_BaMa == "M" &
-          INS_Examen_ongelijke_fase %in% c("a", "b") ~
-          "VU - Bachelordiploma - EOI-opleiding",
-        INS_BaMa == "M" &
-          INS_Examen_ongelijke_fase %in% c("c", "d") ~
-          "VU - Bachelordiploma - Andere opleiding - Zelfde HOOP-gebied",
-        INS_BaMa == "M" &
-          INS_Examen_ongelijke_fase %in% c("e", "f") ~
-          "VU - Bachelordiploma - Andere opleiding - Ander HOOP-gebied",
-        INS_BaMa == "M" &
-          INS_Examen_ongelijke_fase %in% c("g", "h") ~
-          "Universiteit NL - Bachelordiploma - Zelfde HOOP-gebied",
-        INS_BaMa == "M" &
-          INS_Examen_ongelijke_fase %in% c("i", "j") ~
-          "Universiteit NL - Bachelordiploma - Ander HOOP-gebied",
-        INS_Examen_ongelijke_fase %in% c("k") ~
-          "HBO - Diploma",
-        INS_Examen_ongelijke_fase %in% c("x") ~
-          "Geen diploma"
-      )
-  ) %>%
-  ## Maak nieuwe variabele: SUC_Diploma_typeho_gelijke_fase_cohorten
-  mutate(
-    SUC_Diploma_typeho_gelijke_fase_cohorten =
-      case_when(
-        INS_Examen_gelijke_fase %in% c("a", "b", "c", "d", "e", "f", "l") ~
-          "Diploma VU",
-        INS_Examen_gelijke_fase %in% c("g", "h", "i", "j", "p") ~
-          "Diploma Universiteit NL",
-        INS_Examen_gelijke_fase %in% c("k") ~
-          "Diploma HBO",
-        INS_Examen_gelijke_fase %in% c("x") ~
-          "Geen diploma"
-      )
-  ) %>%
-  ## Maak nieuwe variabele: SUC_Diploma_typeho_ongelijke_fase_cohorten
-  mutate(
-    SUC_Diploma_typeho_ongelijke_fase_cohorten =
-      case_when(
-        INS_Examen_ongelijke_fase %in% c("a", "b", "c", "d", "e", "f", "l") ~
-          "Diploma VU",
-        INS_Examen_ongelijke_fase %in% c("g", "h", "i", "j", "p") ~
-          "Diploma Universiteit NL",
-        INS_Examen_ongelijke_fase %in% c("k") ~
-          "Diploma HBO",
-        INS_Examen_ongelijke_fase %in% c("x") ~
-          "Geen diploma"
-      )
-  ) %>%
-  ## Maak nieuwe variabele: SUC_Diploma_ho_gelijke_fase_aantal_jaar_cohorten
+  mapping_translate2(
+    "INS_BaMa",
+    "INS_Examen_gelijke_fase",
+    "SUC_Diploma_ho_gelijke_fase_cohorten"
+  )
+
+Cohorten_nieuw <- Cohorten %>%
+  mapping_translate2(
+    "INS_BaMa",
+    "INS_Examen_ongelijke_fase",
+    "SUC_Diploma_ho_ongelijke_fase_cohorten"
+  )
+
+
+Cohorten <- Cohorten %>%
+  mapping_translate(
+    "INS_Examen_gelijke_fase",
+    "SUC_Diploma_typeho_gelijke_fase_cohorten",
+    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten.csv"
+  )
+
+Cohorten <- Cohorten %>%
+  mapping_translate(
+    "INS_Examen_ongelijke_fase",
+    "SUC_Diploma_typeho_ongelijke_fase_cohorten",
+    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten.csv"
+  )
+
+Cohorten <- Cohorten %>%
   mutate(
     SUC_Diploma_ho_gelijke_fase_aantal_jaar_cohorten =
       INS_Jaar_examen_gelijke_fase
   ) %>%
-  ## Maak nieuwe variabele: SUC_Diploma_ho_ongelijke_fase_aantal_jaar_cohorten
   mutate(
     SUC_Diploma_ho_ongelijke_fase_aantal_jaar_cohorten =
       INS_Jaar_examen_ongelijke_fase
   ) %>%
-  ## Maak nieuwe variabele: SUC_Diplomajaar_gelijke_fase_cohorten
   mutate(
     SUC_Diplomajaar_gelijke_fase_cohorten =
       INS_Eerste_jaar_opleiding_en_instelling +
       SUC_Diploma_ho_gelijke_fase_aantal_jaar_cohorten
   ) %>%
-  ## Maak nieuwe variabele: SUC_Diplomajaar_ongelijke_fase_cohorten
   mutate(
     SUC_Diplomajaar_ongelijke_fase_cohorten =
       INS_Eerste_jaar_opleiding_en_instelling +

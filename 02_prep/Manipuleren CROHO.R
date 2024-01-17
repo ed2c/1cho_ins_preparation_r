@@ -42,7 +42,6 @@ CROHO <- CROHO %>%
   )
 
 ## Helper variabele voor gebruik in volgende stap, zie stijlgids principe F Self-documenting code
-nMax_jaar <- max(CROHO$Datum_begin_opleiding) %>% academic_year()
 nMax_jaar <- config::get("year")
 
 
