@@ -593,7 +593,7 @@ filter_settings_on_type <- function (settings_script_dir, settings_type) {
 
 
 
-overwrite_dot_arguments <- function(function_args, ...) {
+merge_args <- function(function_args, ...) {
   dots <- list(...)
   return(c(function_args[setdiff(names(function_args), names(dots))], dots))
 }
@@ -733,7 +733,7 @@ read_file_proj <- function(
                           col_types = readr::cols(.default = readr::col_guess()))
 
     ## Overwrite the arguments from the function_args with those from the dots (...)
-    function_args <- overwrite_dot_arguments(function_args, ...)
+    function_args <- merge_args(function_args, ...)
 
     df <- do.call(readr::read_delim, function_args)
 
@@ -888,26 +888,47 @@ write_file_proj <- function(
 
   ## write
   if ("csv" %in% extensions) {
-    data.table::fwrite(object,
-                       paste0(file_path_complete, ".csv"),
-                       na = csv_na,
-                       sep = csv_sep,
-                       dec = csv_dec
-    )
+
+    function_args <- list(
+      x = object,
+      file = paste0(file_path_complete, ".csv"),
+      sep = csv_sep,
+      na = csv_na,
+      swx = csv_dec)
+
+    ## Overwrite the arguments from the function_args with those from the dots (...)
+    function_args <- merge_args(function_args, ...)
+
+    do.call(data.table::fwrite, function_args)
+
+
   }
 
   if ("fst" %in% extensions) {
-    fst::write_fst(object,
-                   paste0(file_path_complete, ".fst"),
-                   compress = fst_compress,
-                   ...)
+
+    function_args <- list(
+      x = object,
+      file = paste0(file_path_complete, ".fst"),
+      compress = fst_compress)
+
+    ## Overwrite the arguments from the function_args with those from the dots (...)
+    function_args <- merge_args(function_args, ...)
+
+    do.call(dfst::write_fst, function_args)
   }
 
   if ("rds" %in% extensions) {
-    saveRDS(object,
-            paste0(file_path_complete,".rds"),
-            version = rds_version,
-            ...)
+
+    function_args <- list(
+      object = object,
+      file = paste0(file_path_complete, ".fst"),
+      version = rds_version)
+
+    ## Overwrite the arguments from the function_args with those from the dots (...)
+    function_args <- merge_args(function_args, ...)
+
+    do.call(saveRDS, function_args)
+
   }
 }
 

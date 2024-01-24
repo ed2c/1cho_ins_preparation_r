@@ -1,6 +1,6 @@
-﻿variable;value;notes
-UTILS_CONFIG_READ;utils/read_settings.csv;
-UTILS_CONFIG_WRITE;utils/write_settings.csv;
+variable;value;notes
+UTILS_CONFIG_READ;utils/proj_settings/read_settings.csv;
+UTILS_CONFIG_WRITE;utils/proj_settings/write_settings.csv;
 UTILS_SEED;88886609;
 UTILS_HASH_ALGORITHM;sha256;
 MAP_TABLE_DIR;metadata/mapping_tables/;
@@ -11,4 +11,4 @@ DATA_PREPARED_DIR;;
 METADATA_ASSERTIONS_DIR;metadata/assertions/;
 DOCUMENTATION_DIR;metadata/assertions/;
 R_CONFIG_ACTIVE;vu;
-R_CONFIG_FILE;utils/config.yml;
+R_CONFIG_FILE;utils/proj_settings/config.yml;

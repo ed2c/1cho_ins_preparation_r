@@ -30,7 +30,11 @@ packages_base <- c(
   "grDevices",
   "datasets")
 
+
+# TODO When updating this list, also run outcommented code
 packages_cran <- c(
+  "dataMaid",       # Create a data audit report
+  "config",         # Set up configuration files and functions
   "janitor",        # Clean up names from special characters
   "lubridate",      # Work with dates and times
   "purrr",          # Work with functions and vectors
@@ -56,6 +60,7 @@ packages_vusa <- c("vvcommander",
 
 # Combine packages
 packages <- c(packages_base, packages_cran, packages_vusa)
+packages <- packages[packages != "config"]
 packages_renv <- c(packages_cran, packages_vusa)
 
 
@@ -63,6 +68,8 @@ packages_renv <- c(packages_cran, packages_vusa)
 options(renv.snapshot.filter = function(project) {
   return(packages_renv)
 })
+
+renv::snapshot(type = "custom")
 
 renv::restore()
 

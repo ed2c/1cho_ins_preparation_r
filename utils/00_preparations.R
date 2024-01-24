@@ -1,5 +1,4 @@
 
-# renv::restore()
 
 source("utils/manage_packages.R")
 source("utils/set_system_variables.R")
