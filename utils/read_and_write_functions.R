@@ -112,7 +112,7 @@ read_config_proj <- function(env_var = "UTILS_CONFIG_READ", find_loc_in_env = TR
   }
 
   if (colnames_config_warning == TRUE) {
-    rlang::warn(paste0("Your redconfig file has other column names than expected.\n",
+    rlang::warn(paste0("Your read config file has other column names than expected.\n",
                        "See the config file at:\n",
                        read_config_path,
                        "\n",
@@ -608,9 +608,9 @@ read_file_proj <- function(
     settings_type = NULL,
     sub_dir = NA_character_,
     dir = NULL,
-    full_dir = NULL,
     base_dir = NULL,
     add_branch = NULL,
+    full_dir = NULL,
     extension = NULL,
     fix_encoding = FALSE,
     csv_encoding = "latin1",
@@ -688,7 +688,7 @@ read_file_proj <- function(
   } else {
     dir_elements <- c(base_dir, branch, dir, sub_dir)
     dir_elements <- dir_elements[!is.na(dir_elements)]
-    dir_complete <- paste(dir_elements, collapse = "/")
+    dir_complete <- paste(dir_elements, collapse = .Platform$file.sep)
     dir_complete <- stringr::str_replace_all(dir_complete, stringr::fixed("//"), "/")
   }
 
@@ -871,13 +871,13 @@ write_file_proj <- function(
   } else {
     dir_elements <- c(base_dir, branch, dir, sub_dir)
     dir_elements <- dir_elements[!is.na(dir_elements)]
-    dir_complete <- paste(dir_elements, collapse = "/")
+    dir_complete <- paste(dir_elements, collapse = .Platform$file.sep)
     dir_complete <- stringr::str_replace_all(dir_complete, stringr::fixed("//"), "/")
   }
 
   if (dir.exists(dir_complete) == FALSE) {
     rlang::abort(paste0("The constructed directory doesn't exist.\n",
-                        "Run dir.create(",dir_complete, ", recursive = TRUE) or change the input or config file.\n",
+                        'Run dir.create("',dir_complete, '", recursive = TRUE) or change the input or config file.\n',
                         "For instance, use (base_)dir = '', to overwrite the (base_)dir in the config file.")
     )
   }
