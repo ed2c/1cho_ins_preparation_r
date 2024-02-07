@@ -9,7 +9,7 @@ INS_Soort_inschrijving_1CHO_code;INS_Soort_inschrijving_HO;TRUE;numeric;9,201656
 INS_Soort_inschrijving_actuele_instelling;INS_Soort_inschrijving_actuele_instelling;TRUE;numeric;9,201656;0,9;5,5;NA;FALSE;;
 INS_Opleidingsfase_actueel;INS_Opleidingsfase_actueel;TRUE;subset;9,201656;NA;NA;NA;FALSE;;
 INS_Indicatie_actief_op_peildatum;INS_Indicatie_actief_op_peildatum;TRUE;numeric;9,201656;0,9;4,4;NA;FALSE;;
-INS_Opleidingscode_actueel;INS_Opleidingscode_actueel;TRUE;numeric;9,201656;5000;80000;NA;FALSE;;
+OPL_Code_in_jaar;INS_Opleidingscode_actueel;TRUE;numeric;9,201656;5000;80000;NA;FALSE;;
 INS_Opleidingsnaam_2002;INS_Opleidingscode_actueel - Lange tekst;TRUE;character;9,201656;NA;NA;NA;FALSE;;
 INS_Indicatie_eerste_jaars_opleiding;INS_Indicatie_eerste_jaars_opleiding;TRUE;numeric;9,201656;0,9;5,5;NA;FALSE;;
 INS_Indicatie_eerste_jaars_instelling;INS_Indicatie_eerste_jaars_instelling;TRUE;numeric;9,201656;0,9;5,5;NA;FALSE;;
