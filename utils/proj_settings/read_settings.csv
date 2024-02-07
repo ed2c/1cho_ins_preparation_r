@@ -1,6 +1,7 @@
-﻿script_dir;type;data_dir;base_data_dir;add_branch;extension;message;notes
+script_dir;type;data_dir;base_data_dir;add_branch;extension;message;notes
 01_audit;;00_raw;data;FALSE;csv;Be aware! In this directory very diverse, raw, data is loaded, so this function might be not be appropriate.;
 02_prep;;01_audited;data;FALSE;rds;;
+03_combine;;02_prepared;data;FALSE;rds;;
 03. Analyseset maken;;02_prepared;data;FALSE;rds;;
 04. Analyseren;;3. Analyseset;data;FALSE;rds;;
 05. Rapporten;default;3. Analyseset;data;FALSE;rds;Be aware! This directory has multiple types, the default is used for data assets, exception has '2. Geprepareerde data';

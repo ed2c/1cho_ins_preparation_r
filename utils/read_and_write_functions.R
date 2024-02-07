@@ -624,7 +624,7 @@ read_file_proj <- function(
   # Check the manual and config setting for completeness
 
   # Both either base_dir or dir AND extension must be set to be manual
-  if (sum(max(!is.null(dir), !is.null(base_dir)), !is.null(extension)) < 2) {
+  if (sum(max(max(!is.null(dir), !is.null(base_dir)) | !is.null(full_dir)), !is.null(extension)) < 2) {
     manual_settings <- FALSE
   } else {
     manual_settings <- TRUE
@@ -654,7 +654,7 @@ read_file_proj <- function(
   if (sum(manual_settings, config_settings) == 0) {
     rlang::abort(paste0("You have not given enough variables to save the file properly.\n",
                         "Either add a correct config with current script_path in it or set at least",
-                        "the dir and one of the write_* arguments"))
+                        "the full_dir" ))
   }
 
 
@@ -768,9 +768,65 @@ read_file_proj <- function(
 }
 
 
+codebook_options <- function() {
+  options <- list(
+    # Title of the report
+    reportTitle = paste("dictionary_", name),
+    # what kind of output
+    output = "html",
+    # replace old file
+    replace = TRUE,
+    # output to be generated and saved
+    render = TRUE,
+    # maximum unique values printed
+    maxProbVals = 10
+  )
+
+  return(options)
+}
+
+
+write_file_proj_out <- function(
+    data,
+    name = NULL,
+    hash_cols = Sys.getenv("IDENTIFIER_COLS"),
+    filter_on_col = Sys.getenv("OUT_FILTER_COL"),
+    filter_min = Sys.getenv("OUT_FILTER_MIN"),
+    filter_max = Sys.getenv("OUT_FILTER_MAX"),
+    #mapping_table = Sys.getenv("OUT_MAPPING_TABLE"),
+    make_codebook = FALSE,
+    codebook_dir = Sys.getenv("METADATA_DICTIONARY_END_DIR"),
+    codebook_options = codebook_options(),
+    ...
+) {
+
+  ## Set the data name to the file name if not given
+  if (is.null(name)) {
+    name <- deparse(substitute(data))
+  }
+
+
+  write_file_proj(
+    data = data,
+    name = name,
+    ...
+  )
+
+  # Handle codebook
+  if (is.null(make_codebook) && config_settings == TRUE) {
+    make_codebook <- settings_script_dir[["make_codebook"]]
+  }
+
+  # create dir and codebook
+  dir.create(codebook_dir)
+  dataMaid::makeCodebook(codebook_options)
+
+}
+
+
 
 write_file_proj <- function(
-    object,
+    data,
     name = NULL,
     settings_df = write_config_proj(),
     settings_type = NULL,
@@ -789,9 +845,9 @@ write_file_proj <- function(
     ...
 ) {
 
-  ## Set the object name to the file name if not given
+  ## Set the data name to the file name if not given
   if (is.null(name)) {
-    name <- deparse(substitute(object))
+    name <- deparse(substitute(data))
   }
 
   ## Get the script path relative to the working directory
@@ -800,7 +856,7 @@ write_file_proj <- function(
   # Set and then check the manual and config setting for completeness
 
   # Both either base_dir or dir AND one write must be set to be manual
-  if (sum(max(!is.null(dir), !is.null(base_dir)), !is.null(extensions)) < 2) {
+  if (sum(max(max(!is.null(dir), !is.null(base_dir)) | !is.null(full_dir)), !is.null(extensions)) < 2) {
     manual_settings <- FALSE
   } else {
     manual_settings <- TRUE
@@ -821,7 +877,7 @@ write_file_proj <- function(
       # Deal with this type, this generates an error if type is incorrectly supplied
       settings_script_dir <- filter_settings_on_type(settings_script_dir, settings_type)
 
-      if(!is.na(settings_script_dir$message)) {
+      if (!is.na(settings_script_dir$message)) {
         rlang::inform(settings_script_dir$message,
                       .frequency = "once",
                       .frequency_id = "write_file_proj_message")
@@ -834,7 +890,7 @@ write_file_proj <- function(
   if (sum(manual_settings, config_settings) == 0) {
     rlang::abort(paste0("You have not given enough variables to save the file properly.\n,
                           Either add a correct config with current directory in it or set at least
-                          the dir and one of the write_* arguments"))
+                           dir and extenstions arguments"))
   }
 
   ## Set the dir variables based on manual or config settings
@@ -854,16 +910,17 @@ write_file_proj <- function(
   }
 
   if (is.null(dir) && config_settings == TRUE) {
-    dir <- settings_script_dir[["data_dir"]]
+    dir <- settings_script_dir[["data_dir"]] %>% unlist()
   }
 
   if (is.null(extensions) && config_settings == TRUE) {
-    extensions <- settings_script_dir[["extensions"]]
+    extensions <- settings_script_dir[["extensions"]] %>% unlist()
   }
 
   if (!is.null(extra_ext)) {
     extensions <- c(extensions, extra_ext)
   }
+
 
   ## Create complete dir and file path, remove any empty values and double slashes
   if (!is.null(full_dir)) {
@@ -885,16 +942,15 @@ write_file_proj <- function(
   file_path_complete <- paste(dir_complete, name, sep = "/")
   file_path_complete <- stringr::str_replace_all(file_path_complete, stringr::fixed("//"), "/")
 
-
   ## write
   if ("csv" %in% extensions) {
 
     function_args <- list(
-      x = object,
+      x = data,
       file = paste0(file_path_complete, ".csv"),
       sep = csv_sep,
       na = csv_na,
-      swx = csv_dec)
+      dec = csv_dec)
 
     ## Overwrite the arguments from the function_args with those from the dots (...)
     function_args <- merge_args(function_args, ...)
@@ -907,7 +963,7 @@ write_file_proj <- function(
   if ("fst" %in% extensions) {
 
     function_args <- list(
-      x = object,
+      x = data,
       file = paste0(file_path_complete, ".fst"),
       compress = fst_compress)
 
@@ -920,8 +976,8 @@ write_file_proj <- function(
   if ("rds" %in% extensions) {
 
     function_args <- list(
-      object = object,
-      file = paste0(file_path_complete, ".fst"),
+      object = data,
+      file = paste0(file_path_complete, ".rds"),
       version = rds_version)
 
     ## Overwrite the arguments from the function_args with those from the dots (...)
@@ -930,5 +986,7 @@ write_file_proj <- function(
     do.call(saveRDS, function_args)
 
   }
+
+
 }
 
