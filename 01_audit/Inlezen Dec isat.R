@@ -58,7 +58,7 @@ Dec_isat <- Dec_isat %>%
 ## Bewaar bestand in de versies die als mapping-tables gebruikt worden
 
 write_file_proj(Dec_isat,
-                name = "Mapping_INS_Opleidingscode_actueel_INS_Opleidingsnaam_2002",
+                name = "Mapping_OPL_Code_in_jaar_OPL_Naam_in_jaar",
                 full_dir = Sys.getenv("MAP_TABLE_DIR"),
                 extensions = "csv")
 
