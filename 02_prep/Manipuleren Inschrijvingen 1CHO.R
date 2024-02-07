@@ -17,6 +17,10 @@
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+CROHO_per_jaar <- read_file_proj("CROHO_per_jaar",
+                                 dir = "02_prepared")
+
+
 Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
 
 
@@ -24,7 +28,6 @@ Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## TODO Dit moet naar manipuleren
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   distinct() %>%
   filter(!is.na(INS_Studentnummer)) %>%
@@ -48,25 +51,11 @@ if (config::get("filter_only_own_students") == TRUE) {
 
 if (config::get("filter_only_gov_funded_programmes") == TRUE) {
   Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-    filter(INS_Opleidingscode_actueel < 70000)
+    filter(OPL_Code_in_jaar < 70000)
 }
 
-#'*INFO* Gebaseerd op interne VU mapping table
-## TODO Recreëren met Croho_vest.asc
-# ## Voeg Z08 opleidingscode en naam toe aan 1cho
-# Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-#   select(
-#     -INS_Opleidingsnaam_2002,
-#     -INS_Faculteit
-#   ) %>%
-#   left_join(dfTkoppel_Z08, by = c("INS_Opleidingscode_actueel")) %>%
-#   mutate(
-#     INS_Opleidingsnaam_2002_oud = INS_Opleidingsnaam_2002,
-#     INS_Opleidingsnaam_2002 = INS_Opleidingsnaam_Z08
-#   )
-
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Verwijder duplicates ####
+### Verwijder duplicates ####
 
 if (config::get("fix_duplicated_enrollments") == TRUE) {
 
@@ -74,7 +63,7 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
     Inschrijvingen_1cho[duplicated(Inschrijvingen_1cho[, c(
       "INS_Studentnummer",
       "INS_Inschrijvingsjaar",
-      "INS_Opleidingscode_actueel"
+      "OPL_Code_in_jaar"
     )]), ]
 
   Inschrijvingen_1cho_duplicated <- Inschrijvingen_1cho_duplicated %>%
@@ -84,7 +73,7 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
     Inschrijvingen_1cho[duplicated(Inschrijvingen_1cho[, c(
       "INS_Studentnummer",
       "INS_Inschrijvingsjaar",
-      "INS_Opleidingscode_actueel",
+      "OPL_Code_in_jaar",
       "INS_Instelling"
     )], fromLast = TRUE), ]
 
@@ -92,7 +81,7 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
     arrange(INS_Studentnummer, INS_Inschrijvingsjaar)
 
   df_Inschrijvingen_duplicated <- bind_rows(Inschrijvingen_1cho_duplicated, Inschrijvingen_1cho_duplicated_reverse) %>%
-    arrange(INS_Inschrijvingsjaar, INS_Opleidingscode_actueel, INS_Studentnummer)
+    arrange(INS_Inschrijvingsjaar, OPL_Code_in_jaar, INS_Studentnummer)
 
   ## De duplicates hieronder hebben verschillen in oa de volgende variabelen:
   ## - Datum van in- en uitschrijving
@@ -104,7 +93,7 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
   ## - Code beeindiging : keuze voor de minimale code
 
   df_Inschrijvingen_duplicated <- df_Inschrijvingen_duplicated %>%
-    group_by(INS_Studentnummer, INS_Opleidingscode_actueel, INS_Inschrijvingsjaar) %>%
+    group_by(INS_Studentnummer, OPL_Code_in_jaar, INS_Inschrijvingsjaar) %>%
     arrange(INS_Indicatie_actief_op_peildatum) %>%
     ## Neem voor de duplicate rijen de eerste inschrijvings- en de laatste uitschrijvingsdatum
     mutate(
@@ -121,7 +110,7 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
     ## Neem laagste code van beeindiging mee
     mutate(
       INS_Code_beeindiging_inschrijving = min(INS_Code_beeindiging_inschrijving),
-      INS_Soort_inschrijving_1CHO = min(INS_Soort_inschrijving_1CHO)
+      INS_Soort_inschrijving_1CHO_code = min(INS_Soort_inschrijving_1CHO_code)
     ) %>%
     ## Alleen de bovenste waarde meenemen
     slice(1) %>%
@@ -132,64 +121,56 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
     anti_join(df_Inschrijvingen_duplicated, by = c(
       "INS_Studentnummer",
       "INS_Inschrijvingsjaar",
-      "INS_Opleidingscode_actueel"
+      "OPL_Code_in_jaar"
     )) %>%
     bind_rows(df_Inschrijvingen_duplicated)
 
 }
 
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## ORIGINEEL: Manipuleren Inschrijvingen Deel 2 - Mapping Tables.R
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Bepaal de scope van de dataset
-## Bepaal hiervoor het maximale jaar dat in de data mag zitten, afhankelijk van
-## de dag dat het script wordt uitgevoerd. Vanaf 1 oktober wordt het nieuwe
-## inschrijvingsjaar toegevoegd
-if (month(today()) < 10) {
-  max_jaar <- year(today()) - 1
-} else {
-  max_jaar <- year(today())
-}
+### Fixes ####
 
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Om dubbele records alvast te verwijderen, wordt de functie "distinct"
-## aangeroepen over de dataset.
-Inschrijvingen_1cho <- distinct(Inschrijvingen_1cho)
-
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## Verwijder alleen rijen uit het huidige en voorgaande inschrijvingsjaar.
-## Als er alvast inschrijvingen voor een toekomstig inschrijvingjaar geleverd
-## zijn worden succesvariabelen verstoord.
-
-## Filter de rijen uit een toekomstig inschrijvingsjaar uit de data
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  filter(INS_Inschrijvingsjaar <= max_jaar)
-
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-### Premaster goed zetten ####
+## Premaster goed zetten
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mutate(INS_Premaster = recode(INS_Premaster,
                                 "ja" = "P",
                                 "nee" = NA_character_
   ))
 
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Maak Indicatie variabelen Boolean ####
+## Maak Indicatie variabelen Boolean
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   ## Maak de Indicatie variabelen met "J" en  "N" tot boolean variabelen
   mutate_at(vars(DEM_Indicatie_internationale_student, DEM_Indicatie_nationaliteit_EER_actueel,
                  DEM_Indicatie_nationaliteit_EER_peildatum), ~if_else(. == "J", TRUE, FALSE))
 
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## sla variabele INS_Verblijfsjaren_hoger_onderwijs_origineel op ####
 
+## sla variabele INS_Verblijfsjaren_hoger_onderwijs_origineel op
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mutate(INS_Verblijfsjaren_hoger_onderwijs_origineel = INS_Verblijfsjaren_hoger_onderwijs)
 
+
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-#### Mapping tables ####
+### CROHO info koppelen ####
+
+CROHO_per_jaar <- CROHO_per_jaar %>%
+  select(
+    OPL_Code_in_jaar,
+    OPL_Code_actueel,
+    OPL_Academisch_jaar
+  ) %>%
+  distinct()
+
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  left_join(CROHO_per_jaar,
+            by = c(
+              "INS_Inschrijvingsjaar" =
+                "OPL_Academisch_jaar",
+              "OPL_Code_in_jaar"
+            )
+  )
+
+## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+### Mapping tables ####
 
 ## TODO: Dit lijkt erg VU specifiek
 ## Variabelen transformeren van ja/nee naar TRUE/FALSE
@@ -234,24 +215,18 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
+    "INS_Vooropleiding_voor_HO_code",
+    "INS_Vooropleiding_voor_HO_omschrijving",
+    mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_cat.csv"
+  )
+
+
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  mapping_translate(
     "INS_Vooropleiding_binnen_HO_code",
     "INS_Vooropleiding_binnen_HO_soort",
-    mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
+    mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_cat.csv"
   )
-
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mapping_translate(
-    "INS_Vooropleiding_voor_HO_code",
-    "INS_Vooropleiding_voor_HO_soort",
-    mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
-  )
-
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mapping_translate(
-  "INS_Hoogste_vooropleiding_code_1CHO",
-  "INS_Hoogste_vooropleiding_soort",
-  mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam.csv"
-)
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
@@ -261,7 +236,7 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 )
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-#### BRIN data koppelen ####
+### BRIN data koppelen ####
 # Naam van de Vooropleiding invullen gebaseerd op de BRIN nummer
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
@@ -281,7 +256,7 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Hoogste_vooropleiding_BRIN_1CHO",
-  "INS_Hoogste_vooropleiding_naam",
+  "INS_Hoogste_vooropleiding_instellingsnaam",
   mapping_table_name = "Mapping_BRIN_4_nummer_INS_Instellingsnaam.csv"
 )
 
@@ -331,12 +306,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mapping_translate(
   "INS_Code_examenresultaat",
   "INS_Examenresultaat"
-)
-
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mapping_translate(
-  "INS_Hoogste_vooropleiding_soort",
-  "INS_Hoogste_vooropleiding_soort_cat"
 )
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
@@ -411,7 +380,7 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   )
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-#### INS_Verblijfsjaren, INS_Tussenjaar variabelen ####
+### INS_Verblijfsjaren, INS_Tussenjaar variabelen ####
 
 ## Maak variabelen DEM_Leeftijd_peildatum_1_oktober_Cat_new,
 ## INS_Verblijfsjaren_wetenschappelijk_onderwijs en
