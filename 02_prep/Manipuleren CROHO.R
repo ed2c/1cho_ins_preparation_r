@@ -35,15 +35,15 @@ CROHO <- CROHO %>%
   filter(OPL_Instellingscode == config::get("metadata_institution_BRIN")) %>%
   mutate(
     ## Wijzig type van velden (oa ivm koppeling opleidingstabel)
-    INS_Opleidingscode_actueel = as.integer(INS_Opleidingscode_actueel),
+    OPL_Code_in_jaar = as.integer(OPL_Code_in_jaar),
     OPL_Nominale_studielast_EC_aantal = as.integer(OPL_Nominale_studielast_EC_aantal),
     ## Creëer variabele voor studielast per jaar
     OPL_Nominale_studieduur = as.integer(OPL_Nominale_studielast_EC_aantal / 60)
-  )
+  ) %>%
+  mapping_translate("OPL_Code_in_jaar", "OPL_Code_historisch")
 
 ## Helper variabele voor gebruik in volgende stap, zie stijlgids principe F Self-documenting code
 nMax_jaar <- config::get("year")
-
 
 ## Het CROHO-bestand bevat alleen rijen per wijziging. Om het paar je maken selecteren we de laatste
 ## wijziging per jaar en vervolgens vullen we ontbrekende jaren om met de data van het laatst
@@ -55,11 +55,23 @@ CROHO_per_jaar <- CROHO %>%
     OPL_Academisch_jaar_einde_opleiding = academic_year(Datum_einde_opleiding),
     OPL_Academisch_jaar_einde_opleiding = pmin(OPL_Academisch_jaar_einde_opleiding, nMax_jaar)
   ) %>%
-  group_by(INS_Opleidingscode_actueel, OPL_Instellingscode, INS_Opleidingsvorm, OPL_Academisch_jaar) %>%
+  group_by(OPL_Code_in_jaar, OPL_Instellingscode, INS_Opleidingsvorm, OPL_Academisch_jaar) %>%
   arrange(desc(Datum_begin_opleiding)) %>%
   slice(1) %>%
   ungroup() %>%
-  group_by(INS_Opleidingscode_actueel, OPL_Instellingscode, INS_Opleidingsvorm) %>%
+  ## Groepeer dit eerst om ongeacht vorm de juiste actuele codes en namen te krijgen
+  ## Instellingscode is van belang omdat historische opleidingen anders kunnen zijn voor
+  ## verschillende instellingen
+  group_by(OPL_Code_historisch, OPL_Instellingscode) %>%
+  arrange(Datum_begin_opleiding) %>%
+  ## Bepaal meest recente code en naam
+  mutate(OPL_Code_actueel = last(OPL_Code_in_jaar),
+         OPL_Opleidingsnaam_CROHO_actueel = last(OPL_Opleidingsnaam_CROHO)) %>%
+  ungroup() %>%
+  ##'*INFO* Dit is nu inclusief vorm, dus niet alleen CROHO per jaar, maar CROHO_vorm_per_jaar
+  ## TODO Controleren welke verschillen rijen met verschillende vormen nog meer hebben, misschien
+  ## vormen ook samenvoegen
+  group_by(OPL_Code_in_jaar, OPL_Instellingscode, INS_Opleidingsvorm) %>%
   mutate(
     ## Voorkom dat er een volgend jaar wordt toegevoegd als de opleiding historisch is
     temp_max_jaar = if_else(all(Code_stand_record == "HISTORISCH"),
@@ -71,8 +83,8 @@ CROHO_per_jaar <- CROHO %>%
   ## Verwijder tijdelijke variabelen
   select(-c(volgend_jaar, OPL_Academisch_jaar, temp_max_jaar)) %>%
   rename(OPL_Academisch_jaar = Opvolgende_jaren) %>%
-  ungroup()
-
+  ungroup() %>%
+  rename(OPL_Opleidingsnaam_CROHO_in_jaar = OPL_Opleidingsnaam_CROHO)
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####

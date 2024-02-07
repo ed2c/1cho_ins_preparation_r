@@ -50,7 +50,7 @@ assert_no_duplicates_in_group(
   c(
     "INS_Studentnummer",
     "INS_Eerste_jaar_opleiding_en_instelling",
-    "INS_Opleidingscode_actueel"
+    "OPL_Code_in_jaar"
   )
 )
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -90,7 +90,7 @@ Cohorten_succes <- Cohorten %>%
   ## Selecteer per rij de sleutelvelden en de velden die omgeklapt moeten worden.
   select(
     INS_Studentnummer,
-    INS_Opleidingscode_actueel,
+    OPL_Code_in_jaar,
     INS_Eerste_jaar_opleiding_en_instelling,
     starts_with("INS_Examen_na"),
     starts_with("INS_Herinschrijving_na")
@@ -104,7 +104,7 @@ Cohorten_succes <- Cohorten %>%
   gather(
     INS_Herinschrijving_key, INS_Herinschrijving,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling,
     -INS_Herinschrijving_na_1_jaar_vastgezet,
     -starts_with("INS_Examen_na")
@@ -114,7 +114,7 @@ Cohorten_succes <- Cohorten %>%
     -INS_Herinschrijving_key,
     -INS_Herinschrijving,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling,
     -INS_Herinschrijving_na_1_jaar_vastgezet
   ) %>%
@@ -320,7 +320,7 @@ Cohorten_succes <- Cohorten %>%
     key,
     value,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling,
     -Jaar
   )
@@ -334,7 +334,7 @@ Cohorten_succes_samenvatting <- Cohorten_succes %>%
   ## Groepeer velden
   group_by(
     INS_Studentnummer,
-    INS_Opleidingscode_actueel,
+    OPL_Code_in_jaar,
     INS_Eerste_jaar_opleiding_en_instelling,
     key
   ) %>%
@@ -367,7 +367,7 @@ Cohorten_succes_samenvatting <- Cohorten_succes %>%
     SUC_Uitval_HO_aantal_jaar_cohorten,
     SUC_Uitval_vu_aantal_jaar_cohorten,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling
   ) %>%
   ## Stap 2: Selecteer rijen waarvoor SUC_x_aantal_jaar_cohorten een waarde heeft
@@ -417,11 +417,8 @@ Cohorten_succes <- Cohorten_succes %>%
 ## Koppel de succes-tabel aan Cohorten
 Cohorten <- Cohorten %>%
   left_join(Cohorten_succes, by = c(
-           "INS_Studentnummer" =
            "INS_Studentnummer",
-           "INS_Opleidingscode_actueel" =
-           "INS_Opleidingscode_actueel",
-           "INS_Eerste_jaar_opleiding_en_instelling" =
+           "OPL_Code_in_jaar",
            "INS_Eerste_jaar_opleiding_en_instelling"),
             suffix = c("", ".y")) %>%
   select(-ends_with(".y")) %>%
@@ -472,19 +469,16 @@ gc()
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ## Koppel de succes-samenvatting-tabel aan Cohorten
 Cohorten <- Cohorten %>%
   left_join(Cohorten_succes_samenvatting, by = c(
-      "INS_Studentnummer" =
-        "INS_Studentnummer",
-      "INS_Opleidingscode_actueel" =
-        "INS_Opleidingscode_actueel",
-      "INS_Eerste_jaar_opleiding_en_instelling" =
-        "INS_Eerste_jaar_opleiding_en_instelling"
+      "INS_Studentnummer",
+      "OPL_Code_in_jaar",
+      "INS_Eerste_jaar_opleiding_en_instelling"
     ), suffix = c("", ".y")) %>%
   select(-ends_with(".y")) %>%
   ## Correctie variabele omdat voor jaar 9 de variabele is bepaald nadat
@@ -526,7 +520,7 @@ gc()
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -551,8 +545,9 @@ assert_no_duplicates_in_group(Cohorten, c(
 ## Selecteer per studiejaar, per opleiding de nominale studieduur
 CROHO_per_jaar <- CROHO_per_jaar %>%
   select(
-    OPL_Opleidingsnaam_CROHO,
-    INS_Opleidingscode_actueel,
+    OPL_Opleidingsnaam_CROHO_actueel,
+    OPL_Code_in_jaar,
+    OPL_Code_actueel,
     OPL_Nominale_studieduur,
     OPL_Academisch_jaar
   ) %>%
@@ -561,14 +556,14 @@ CROHO_per_jaar <- CROHO_per_jaar %>%
 
 ## Koppel de nominale studeduur aan Cohorten
 Cohorten <- Cohorten %>%
-  mapping_translate(current = "INS_Opleidingscode_actueel", new = "INS_Opleidingsnaam_2002")
+  mapping_translate(current = "OPL_Code_in_jaar", new = "OPL_Naam_in_jaar")
 
 Cohorten <- Cohorten %>%
   left_join(CROHO_per_jaar,
             by = c(
               "INS_Eerste_jaar_opleiding_en_instelling" =
                 "OPL_Academisch_jaar",
-              "INS_Opleidingscode_actueel"
+              "OPL_Code_in_jaar"
             )
   )
 
@@ -578,7 +573,7 @@ Cohorten <- Cohorten %>%
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -732,7 +727,7 @@ Cohorten <- Cohorten %>%
   mutate(
     INS_BaMa =
       if_else(
-        INS_Opleidingscode_actueel < 59999,
+        OPL_Code_in_jaar < 59999,
         "B",
         "M"
       )
@@ -896,7 +891,7 @@ Cohorten <- Cohorten %>%
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
 
 write_file_proj(Cohorten, "INS_Cohorten")
