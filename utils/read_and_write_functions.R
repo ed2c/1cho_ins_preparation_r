@@ -767,11 +767,13 @@ read_file_proj <- function(
 
 }
 
-
-codebook_options <- function() {
+## TODO this doesn't work yet
+## I tried a lot: https://chat.openai.com/share/476ff03e-bd69-4567-9633-54041d6d6453
+## makeCodebook doesn't seem to deal well with do.call.
+codebook_basic_options <- function() {
   options <- list(
     # Title of the report
-    reportTitle = paste("dictionary_", name),
+    #reportTitle = paste("dictionary_", name),
     # what kind of output
     output = "html",
     # replace old file
@@ -793,19 +795,53 @@ write_file_proj_out <- function(
     filter_on_col = Sys.getenv("OUT_FILTER_COL"),
     filter_min = Sys.getenv("OUT_FILTER_MIN"),
     filter_max = Sys.getenv("OUT_FILTER_MAX"),
-    #mapping_table = Sys.getenv("OUT_MAPPING_TABLE"),
-    make_codebook = FALSE,
+    mapping_table = Sys.getenv("OUT_MAPPING_TABLE_NAME"),
+    make_codebook = Sys.getenv("OUT_CODEBOOK"),
     codebook_dir = Sys.getenv("METADATA_DICTIONARY_END_DIR"),
-    codebook_options = codebook_options(),
+    #codebook_options = codebook_basic_options(),
     ...
 ) {
 
-  ## Set the data name to the file name if not given
+  # Set the data name to the file name if not given
   if (is.null(name)) {
     name <- deparse(substitute(data))
   }
 
+  # Hashing
+  if (is.na(hash_cols) | is.null(hash_cols) | hash_cols == "" | hash_cols == "NULL" | hash_cols == "NA") {
+    # Continue
+  } else {
+    df <- df %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(hash_cols), hash_var))
+  }
 
+  if (is.na(filter_on_col) | is.null(filter_on_col) | filter_on_col == "" | filter_on_col == "NULL" | filter_on_col == "NA") {
+    # Continue
+  } else {
+    # Filter the data
+
+    if (class(data[[filter_on_col]]) != "numeric") {
+      stop(paste0("The column to filter on: ", filter_on_col, " is not numeric. \n",
+                  "Change either the input or env var, or mutate the column to numeric. \n")
+      )
+
+    }
+
+    # Set the filters
+    if (is.na(filter_min) | is.null(filter_min) | filter_min == "" | filter_min == "NULL" | filter_min == "NA") {
+      filter_min <- -Inf
+    }
+
+    if (is.na(filter_max) | is.null(filter_max) | filter_max == "" | filter_max == "NULL" | filter_max == "NA") {
+      filter_max <- Inf
+    }
+
+    data <- data %>%
+      dplyr::filter(!!rlang::sym(filter_on_col) >= filter_min,
+                    !!rlang::sym(filter_on_col) <= filter_max)
+  }
+
+  # write file
   write_file_proj(
     data = data,
     name = name,
@@ -817,9 +853,31 @@ write_file_proj_out <- function(
     make_codebook <- settings_script_dir[["make_codebook"]]
   }
 
-  # create dir and codebook
-  dir.create(codebook_dir)
-  dataMaid::makeCodebook(codebook_options)
+  # create codebook
+  if (dir.exists(codebook_dir) == FALSE) {
+    rlang::abort(paste0("The constructed directory doesn't exist.\n",
+                        "Run dir.create('",codebook_dir, "', recursive = TRUE) or change the input or config file.\n"
+                        )
+    )
+  }
+
+  full_file_name <- paste0(getwd(), "/", codebook_dir, "dictionary_", name, ".Rmd")
+
+  if (make_codebook == TRUE) {
+    dataReporter::makeCodebook(
+      data = data,
+      vol = "",
+      reportTitle = paste("Dictionary", name),
+      file = full_file_name,
+      output = "html",
+      # replace old file
+      replace = TRUE,
+      # output to be generated and saved
+      render = TRUE,
+      # maximum unique values printed
+      maxProbVals = 10
+    )
+  }
 
 }
 
@@ -934,7 +992,7 @@ write_file_proj <- function(
 
   if (dir.exists(dir_complete) == FALSE) {
     rlang::abort(paste0("The constructed directory doesn't exist.\n",
-                        "Run dir.create(",dir_complete, ", recursive = TRUE) or change the input or config file.\n",
+                        "Run dir.create('",dir_complete, "', recursive = TRUE) or change the input or config file.\n",
                         "For instance, use (base_)dir = '', to overwrite the (base_)dir in the config file.")
     )
   }
