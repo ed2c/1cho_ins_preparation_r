@@ -360,6 +360,27 @@
       ],
       "Hash": "f7a2aaf8d6f33b0ed9d0a24b0af9ff99"
     },
+    "dataReporter": {
+      "Package": "dataReporter",
+      "Version": "1.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "ggplot2",
+        "gridExtra",
+        "haven",
+        "htmltools",
+        "magrittr",
+        "methods",
+        "pander",
+        "rmarkdown",
+        "robustbase",
+        "stringi",
+        "whoami"
+      ],
+      "Hash": "3d7115603dd405bec1c72b3ca54eb1dd"
+    },
     "desc": {
       "Package": "desc",
       "Version": "1.4.3",
@@ -734,16 +755,6 @@
         "methods"
       ],
       "Hash": "266a20443ca13c65688b2116d5220f76"
-    },
-    "kit": {
-      "Package": "kit",
-      "Version": "0.0.15",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "fca15b45f78e0ace7333bb1e28b7dee2"
     },
     "knitr": {
       "Package": "knitr",
@@ -1485,122 +1496,33 @@
     },
     "vusa": {
       "Package": "vusa",
-      "Version": "0.30.1.9000",
-      "Source": "Bitbucket",
-      "RemoteType": "bitbucket",
-      "RemoteHost": "api.bitbucket.org/2.0",
-      "RemoteUsername": "vustudentanalytics",
+      "Version": "0.0.0.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "vusaverse",
       "RemoteRepo": "vusa",
-      "RemoteRef": "master",
-      "RemoteSha": "559002a5264af4ce9c96c4cdfaf78183b692744c",
-      "Requirements": [
-        "R",
-        "dplyr",
-        "magrittr",
-        "purrr",
-        "stringr",
-        "utils"
-      ],
-      "Hash": "51b651de254902df3107b474a9163545"
-    },
-    "vvauditor": {
-      "Package": "vvauditor",
-      "Version": "0.8.10.9000",
-      "Source": "Bitbucket",
-      "RemoteType": "bitbucket",
-      "RemoteHost": "api.bitbucket.org/2.0",
-      "RemoteUsername": "vustudentanalytics",
-      "RemoteRepo": "vvauditor",
       "RemoteRef": "main",
-      "RemoteSha": "0601c22c727e653f356693a4bcc90531723aaa52",
+      "RemoteSha": "a4b9c88168abd7c0ab16070429fb7f99b8c9843f",
       "Requirements": [
         "BurStMisc",
+        "RCurl",
         "checkmate",
         "cli",
         "data.table",
+        "dataMaid",
+        "digest",
         "dplyr",
         "findR",
         "fs",
-        "kit",
+        "fst",
         "lintr",
         "lubridate",
+        "magrittr",
+        "plyr",
         "purrr",
         "readr",
         "rex",
-        "rlang",
-        "rstudioapi",
-        "slackr",
-        "stats",
-        "stringi",
-        "stringr",
-        "this.path",
-        "tibble",
-        "tidyr",
-        "tidyselect",
-        "vroom",
-        "xml2"
-      ],
-      "Hash": "cca3a67708da4fa85c0f2032df6a0b6d"
-    },
-    "vvcommander": {
-      "Package": "vvcommander",
-      "Version": "0.5.7.9000",
-      "Source": "Bitbucket",
-      "RemoteType": "bitbucket",
-      "RemoteHost": "api.bitbucket.org/2.0",
-      "RemoteUsername": "vustudentanalytics",
-      "RemoteRepo": "vvcommander",
-      "RemoteRef": "main",
-      "RemoteSha": "3ea20562023936b76cc02adb87d4a1b7c72682aa",
-      "Requirements": [
-        "RCurl",
-        "cli",
-        "readr",
-        "stringr",
-        "this.path"
-      ],
-      "Hash": "5b2301e554c6074a1b0e054ec431984a"
-    },
-    "vvconverter": {
-      "Package": "vvconverter",
-      "Version": "0.6.4.9000",
-      "Source": "Bitbucket",
-      "RemoteType": "bitbucket",
-      "RemoteHost": "api.bitbucket.org/2.0",
-      "RemoteUsername": "vustudentanalytics",
-      "RemoteRepo": "vvconverter",
-      "RemoteRef": "main",
-      "RemoteSha": "87f1a37ae5380e7718184396e9b15396526e230d",
-      "Requirements": [
-        "checkmate",
-        "dplyr",
-        "lubridate",
-        "stringr",
-        "tibble"
-      ],
-      "Hash": "8e5715f7eeb6c70a2148070e54754178"
-    },
-    "vvmover": {
-      "Package": "vvmover",
-      "Version": "1.9.11.9000",
-      "Source": "Bitbucket",
-      "RemoteType": "bitbucket",
-      "RemoteHost": "api.bitbucket.org/2.0",
-      "RemoteUsername": "vustudentanalytics",
-      "RemoteRepo": "vvmover",
-      "RemoteRef": "main",
-      "RemoteSha": "1a3363d2de5dbf51cb98748f703628d06aa902ca",
-      "Requirements": [
-        "cli",
-        "data.table",
-        "digest",
-        "dplyr",
-        "fst",
-        "janitor",
-        "lubridate",
-        "purrr",
-        "readr",
-        "readxl",
         "rlang",
         "rstudioapi",
         "scriptName",
@@ -1610,33 +1532,24 @@
         "this.path",
         "tibble",
         "tidyr",
-        "utils"
+        "tidyselect",
+        "vroom",
+        "vvfiller",
+        "xml2"
       ],
-      "Hash": "ac0fbad84bae5b92f854b5b1a18992cb"
+      "Hash": "13f04c33e0e201c5b970f1df7cd55446"
     },
-    "vvsculptor": {
-      "Package": "vvsculptor",
-      "Version": "0.5.7.9000",
-      "Source": "Bitbucket",
-      "RemoteType": "bitbucket",
-      "RemoteHost": "api.bitbucket.org/2.0",
-      "RemoteUsername": "vustudentanalytics",
-      "RemoteRepo": "vvsculptor",
-      "RemoteRef": "main",
-      "RemoteSha": "ba692fb57969a98d02e2e45bf5588b736ff1e44e",
+    "vvfiller": {
+      "Package": "vvfiller",
+      "Version": "0.6.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "dplyr",
-        "plyr",
         "purrr",
-        "readr",
-        "slackr",
-        "stats",
-        "stringr",
-        "tibble",
-        "tidyr",
-        "utils"
+        "rlang"
       ],
-      "Hash": "50edb0ccbaf7448b1a2afbe2005b1b6d"
+      "Hash": "6f3e87f2bb7de7f64617a88f711f5d1a"
     },
     "whoami": {
       "Package": "whoami",
