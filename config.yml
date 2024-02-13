@@ -1,6 +1,9 @@
 
 vu:
+  # The following settings are general settings that determine which data sources are used
+  # Change them for your own data / institution
   year: 2022
+  first_year: 2010 # This cannot be lower than 2002 for Cohort files
   data_1cho_starting_cohorts_rel_file_path: "2023-09-19-15-32-12_ODW204 - VUanalytics EOI Cohorten.zip"
   data_1cho_enrollments_rel_file_path: "2023-03-21-16-43-54_ODW205 - VUanalytics 1CHO Inschrijving.zip"
   data_1cho_starting_cohorts_file_path: !expr file.path("data/00_raw", year, data_1cho_starting_cohorts_rel_file_path)
@@ -8,9 +11,13 @@ vu:
   metadata_1cho_decoding_files_dir: "data/00_raw/2022/decoding_files/"
   metadata_institution_name: "VU"
   metadata_institution_BRIN: "21PL"
-  fix_duplicated_enrollments: TRUE
+
+  # The following settings influence what data manipulations are taken.
+  fix_duplicated_enrollments: TRUE # At the VU sometimes a student has multiple enrollments in one year. This setting combines those enrollments
   filter_only_own_students: TRUE
   filter_only_gov_funded_programmes: TRUE
+  # Add additional manipulation configs to this vector
+  data_manipulation_config: !expr c(fix_duplicated_enrollments, filter_only_own_students, filter_only_gov_funded_programmes)
 
 synthetic:
   inherits: vu
