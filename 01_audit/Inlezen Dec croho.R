@@ -43,7 +43,7 @@ Dec_Croho <- Dec_Croho %>%
   ## Verwijderen van accenten
   mutate(across(
     everything(),
-    ~ stringi:::stri_trans_general(str = ., id = "Latin-ASCII")
+    ~ stri_trans_general(str = ., id = "Latin-ASCII")
   )) %>%
   ## Splits kolom X1 in 2 kolommen
   rename(
