@@ -2,12 +2,8 @@
 ## TODO lastig dit, dit kan pas na combinen
 
 ## TODO versimpelen
-
-if (month(today()) < 10) {
-  max_jaar <- year(today()) - 1
-} else {
-  max_jaar <- year(today())
-}
+## TODO
+## Tijd tot diploma obv datum aantekening diploma ####
 
 ## Bepaal ook het eerste jaar
 min_jaar <- min(Inschrijvingen$INS_Inschrijvingsjaar)
@@ -62,10 +58,6 @@ Inschrijvingen <- Inschrijvingen %>%
                    )
   )
 
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#### Tijd tot diploma ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Omdat bij diploma"s het relevant is na hoeveel tijd een student dit
 ## behaalt, wordt een variabele "tijd tot diploma" uitgerekend.
@@ -86,9 +78,8 @@ Inschrijvingen <- Inschrijvingen %>%
 
 ## TODO Versimpelen
 
-
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#### INS_Eerste_datum_inschrijving & INS_Tijd_tot_diploma ####
+#### INS_Eerste_datum_inschrijving & INS_Tijd_tot_diploma
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Omdat diplomarendement vaak, ook voor ouderejaars, beredeneerd wordt vanaf
 ## de eerste inschrijving aan de opleiding wordt deze datum aan elke
@@ -144,6 +135,10 @@ Inschrijvingen <- Inschrijvingen %>%
   )
 
 
+## Uitstroom ####
+#'*INFO*
+SUC_Diploma_nominaal_plus1_tm_9_cohorten
+SUC_Uitval_na_jaar_1_tm_8_cohorten
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## Bepaal type uitstroom, door de uitval en diploma variabelen samen te voegen.
 Inschrijvingen <- Inschrijvingen %>%
@@ -172,42 +167,12 @@ Inschrijvingen <- Inschrijvingen %>%
 ## Voor het aanmaken van deze variabelen zijn ook INS_Uitschrijving_voor_1_feb
 ## en INS_EOI_uitschrijving_voor_1_feb benodigd.
 
-Inschrijvingen %<>%
-  mutate(
-    ## Bepaal of de uitschrijving in hetzelfde studiejaar
-    ## voor 1 februari was
-    INS_Uitschrijving_voor_1_feb = INS_Datum_uitschrijving <= as_date(
-      paste0(INS_Inschrijvingsjaar + 1, "-01-31")
-    ),
-    ## Bepaal of deze uitschrijving een EOI was. Alleen in dit geval wordt
-    ## de BSA ontlopen
-    INS_EOI_uitschrijving_voor_1_feb =
-      INS_Eerste_jaar_opleiding_en_instelling ==
-      INS_Inschrijvingsjaar &
-      INS_Uitschrijving_voor_1_feb
-  ) %>%
-  ## Groepeer per student/opleiding
-  group_by(INS_Studentnummer, INS_Opleidingsnaam_Z08) %>%
-  mutate(
-    INS_Herinschrijving_jaar_2_na_uitschrijving_voor_1_feb_in_jaar_1 =
-      case_when(
-        ## Als de student in geen enkel jaar een TRUE heeft op de
-        ## variabele INS_EOI_uitschrijving_voor_1_feb, wordt het
-        ## een FALSE
-        sum(INS_EOI_uitschrijving_voor_1_feb) == 0 ~ FALSE,
-        ## Bij alle overgebleven inschrijvingen is er dus wel sprake van
-        ## het ontlopen van het bsa. Als het maximale studiejaar groter
-        ## is dan 1, betekent dit dat er een herinschrijving is geweest
-        max(INS_Studiejaar) > 1 ~ TRUE,
-        ## in alle overige gevallen is hier geen sprake van.
-        T ~ F
-      )
-  ) %>%
-  ungroup()
-
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## SUC_Type_uistroom_studiejaar wordt aangemaakt na INS_Herinschrijving_jaar_2_na_uitschrijving_voor_1_feb_in_jaar_1
+
+
+## Uitstroom per studiejaar ####
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## Maak variabel SUC_Type_uitstroom_studiejaar aan
@@ -215,6 +180,17 @@ Inschrijvingen <- Inschrijvingen %>%
   Wrapper_bepaal_uitstroom_studiejaar() %>%
   select(-OPL_Studielast_nominaal)
 
+#'*INFO* wrapper_determine_outflow_study_year()
+
+#'*INFO* kan niet in cohorten natuurlijk
+mutate(SUC_Type_uitstroom_studiejaar = purrr::pmap_chr(
+  list(
+    SUC_Type_uitstroom,
+    INS_Studiejaar,
+    OPL_Studielast_nominaal
+  ),
+  determine_outflow_study_year
+))
 
 
 
@@ -311,7 +287,7 @@ Inschrijvingen <- Inschrijvingen %>% mutate(
 
 
 ## _________________________________________________________________________________________________
-## Aansluiting
+## Aansluiting ####
 
 ## Aansluiting is een gecombineerde variabele waarin de voorgeschiedenis
 ## van de student wordt bepaald.
