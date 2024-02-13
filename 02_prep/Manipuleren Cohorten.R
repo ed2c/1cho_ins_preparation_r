@@ -400,7 +400,7 @@ Cohorten_succes <- Cohorten_succes %>%
   ## Gebruik "na" of "binnen" in key afhankelijk of het een variabele mbt
   ## diplomarendement betreft.
   mutate(key = case_when(
-    stringr::str_detect(key, coll("Diploma", ignore_case = TRUE)) ~
+    str_detect(key, coll("Diploma", ignore_case = TRUE)) ~
       paste(key, "binnen", Jaar, "jaar_cohorten", sep = "_"),
     TRUE ~
       paste(key, "na_jaar", Jaar, "cohorten", sep = "_")
@@ -626,9 +626,11 @@ Cohorten <- Cohorten %>%
   mutate(
     SUC_Diploma_nominaal_plus1_tm_9_cohorten =
       case_when(
+        SUC_Diploma_verschil_nominaal_aantal_jaar < 0 ~
+          paste0("Nominaal -", SUC_Diploma_verschil_nominaal_aantal_jaar),
         SUC_Diploma_verschil_nominaal_aantal_jaar == 0 ~ "Nominaal",
         SUC_Diploma_verschil_nominaal_aantal_jaar > 0 ~
-          paste0("Nominaal plus ", SUC_Diploma_verschil_nominaal_aantal_jaar),
+          paste0("Nominaal +", SUC_Diploma_verschil_nominaal_aantal_jaar),
         is.na(SUC_Diploma_aantal_jaar_cohorten) ~
           "(Nog) geen diploma",
         # Alle andere gevallen, o.a. als OPL_Nominale_studieduur onbekend is.
@@ -682,7 +684,7 @@ Bepaal_Nominaalplus <- function(df, plus) {
 ## SUC_Diploma_nominaal_cohorten, SUC_Diploma_nominaal_plus1 t/m 5 _cohorten.
 ## SUC_Diploma_nominaal_cohorten
 Cohorten <- Bepaal_Nominaalplus(df = Cohorten, plus = 0) %>%
-  dplyr::rename(
+  rename(
     SUC_Diploma_nominaal_cohorten =
       SUC_Diploma_nominaal_plus0_cohorten
   ) %>%
