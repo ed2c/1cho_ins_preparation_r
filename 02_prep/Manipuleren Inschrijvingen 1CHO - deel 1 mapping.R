@@ -74,11 +74,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
                  DEM_Indicatie_nationaliteit_EER_peildatum), ~if_else(. == "J", TRUE, FALSE))
 
 
-## sla variabele INS_Verblijfsjaren_hoger_onderwijs_origineel op
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mutate(INS_Verblijfsjaren_hoger_onderwijs_origineel = INS_Verblijfsjaren_hoger_onderwijs)
-
-
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ### 2.3 Mapping tables ####
 
@@ -296,6 +291,22 @@ Inschrijvingen_1cho <- mapping_translate(
   "DEM_Geslacht_code",
   "DEM_Geslacht_naam"
 )
+
+## Deze variabele leidt tot heel veel categorieen omdat dit een aantal is.
+## Voor de univariate plots maken we daarom een categorische variabele hiervan.
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  mapping_category(
+    "INS_Verblijfsjaren_wetenschappelijk_onderwijs",
+    "INS_Verblijfsjaren_wetenschappelijk_onderwijs_vanaf_0_cat",
+    mapping_table_name = "Mapping_INS_Verblijfsjaren_wetenschappelijk_onderwijs_cat"
+  )
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  mapping_category(
+    "INS_Verblijfsjaren_hoger_onderwijs",
+    "INS_Verblijfsjaren_hoger_onderwijs_vanaf_0_cat",
+    mapping_table_name = "Mapping_INS_Verblijfsjaren_wetenschappelijk_onderwijs_cat"
+  )
+
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
