@@ -1,26 +1,34 @@
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## R code voor Student Analytics Vrije Universiteit Amsterdam
+## Copyright 2023 VU
+## Web Page: http://www.vu.nl
+##
+##' *INFO*:
+## 1) ___
+##
+## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-INS_Inschrijvingen_1CHO_VUdata <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
+INS_Inschrijvingen_1CHO_VUdata <- read_file_proj("Inschrijvingen_1cho")
 
-INS_Cohorten <- read_file_proj("INS_Cohorten")
+Cohorten <- read_file_proj("Cohorten")
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. SAMENVOEGEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-INS_Cohorten <- INS_Cohorten %>%
-  filter(INS_Eerste_jaar_opleiding_en_instelling >= config::get("first_year")) %>%
+Cohorten <- Cohorten %>%
   select(-OPL_Code_in_jaar)
 
 INS_Inschrijvingen_1CHO_VUdata <- INS_Inschrijvingen_1CHO_VUdata %>%
   filter(INS_Eerste_jaar_opleiding_en_instelling >= config::get("first_year"))
 
 INS_Inschrijvingen_combined <- INS_Inschrijvingen_1CHO_VUdata %>%
-  left_join(INS_Cohorten,
+  left_join(Cohorten,
             by = c("INS_Studentnummer",
                    "OPL_Code_actueel",
                    "INS_Eerste_jaar_opleiding_en_instelling"))
@@ -37,7 +45,7 @@ INS_Inschrijvingen_combined <- INS_Inschrijvingen_1CHO_VUdata %>%
 ## BEWAAR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-write_file_proj(INS_Inschrijvingen_combined)
+write_file_proj(INS_Inschrijvingen_combined, "INS_Inschrijvingen_1")
 
 
 
@@ -51,13 +59,13 @@ write_file_proj(INS_Inschrijvingen_combined)
 
 ## TODO move these checks into validation scripts
 only_INS <- anti_join(INS_Inschrijvingen_1CHO_VUdata,
-                  INS_Cohorten,
+                  Cohorten,
                   by = c("INS_Studentnummer",
                         "OPL_Code_actueel",
                         "INS_Eerste_jaar_opleiding_en_instelling"
                         ))
 
-only_COH <- anti_join(INS_Cohorten,
+only_COH <- anti_join(Cohorten,
                       INS_Inschrijvingen_1CHO_VUdata,
                       by = c("INS_Studentnummer",
                              "OPL_Code_actueel",
@@ -67,13 +75,16 @@ only_COH <- anti_join(INS_Cohorten,
 ##' metadata/data_dictionary_start/Bestandbeschrijving EOIcohort_VSNU_1chHO2021.docx
 only_INS_filtered <- only_INS %>%
   filter(INS_Eerste_jaar_opleiding_en_instelling == INS_Inschrijvingsjaar,
-         INS_Indicatie_actief_op_peildatum %in% c(1, 3),
+         INS_Indicatie_actief_op_peildatum_code %in% c(1, 3),
          INS_Soort_inschrijving_1CHO_code %in% c(1, 2, 3, 4),
          INS_Instelling == config::get("metadata_institution_name"))
 
+only_INS_filtered_count <- only_INS_filtered %>%
+  count(INS_Opleidingsnaam_2002)
+
 ## 491 Eerstejaars inschrijvingen blijven over (0,3%), met name bij opleidingen die (later)
 ## joint degree zijn (geworden).
-# > clipr::write_clip(only_INS_filtered_count %>% arrange(desc(n))  %>% slice(1:10))
+# clipr::write_clip(only_INS_filtered_count %>% arrange(desc(n))  %>% slice(1:10))
 # INS_Opleidingsnaam_2002	OPL_Code_actueel	OPL_Code_in_jaar	n
 # B Natuur- en Sterrenkunde	55013	56984	395
 # M Physics	65016	60202	324
