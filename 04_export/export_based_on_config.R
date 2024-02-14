@@ -3,7 +3,7 @@
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-INS_Inschrijvingen <- read_file_proj("INS_Inschrijvingen_combined")
+INS_Inschrijvingen <- read_file_proj("Inschrijvingen")
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
