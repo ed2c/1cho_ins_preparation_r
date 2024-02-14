@@ -20,7 +20,7 @@ Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata_deel_1",
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-### 2.1 ####
+### 2.1 Direct af te leiden ####
 
 ## Voeg de variabele BPM toe om aan te geven of de
 ## student bachelor-, premaster- of masterstudent is.
@@ -31,49 +31,17 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
                                      INS_Premaster)
   )
 
-## Maak variabelen DEM_Leeftijd_peildatum_1_oktober_Cat_new,
-## INS_Verblijfsjaren_wetenschappelijk_onderwijs en
-## INS_Verblijfsjaren_hoger_onderwijs
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mutate(
-    ## Waneer er geen verblijfsjaren zijn, betekent dit dat
-    ## de inschrijving niet-actief is/opleiding telt niet mee
-    INS_Verblijfsjaren_wetenschappelijk_onderwijs =
-      if_else(INS_Verblijfsjaren_wetenschappelijk_onderwijs == 0,
-              NA_integer_,
-              as.integer(
-                INS_Verblijfsjaren_wetenschappelijk_onderwijs
-              )
-      ),
-    INS_Verblijfsjaren_hoger_onderwijs =
-      if_else(INS_Verblijfsjaren_hoger_onderwijs == 0,
-              NA_integer_,
-              as.integer(INS_Verblijfsjaren_hoger_onderwijs)
-      )
-    ##' *INFO* Onderstaande uitgecomment, omdat dit afwijking van standaard definitie is
-    #,
-    # ## De definitie voor verblijfsjaren wordt aangepast,
-    # ## omdat het logischer is om vanaf 0 te tellen
-    # INS_Verblijfsjaren_wetenschappelijk_onderwijs =
-    #   INS_Verblijfsjaren_wetenschappelijk_onderwijs - 1,
-    # INS_Verblijfsjaren_hoger_onderwijs =
-    #   INS_Verblijfsjaren_hoger_onderwijs - 1
-  )
+##' *INFO* Onderstaande uitgecomment, omdat dit afwijking van standaard definitie is
+# Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+#   mutate(
+#     ## De definitie voor verblijfsjaren wordt aangepast,
+#     ## omdat het logischer is om vanaf 0 te tellen
+#     INS_Verblijfsjaren_wetenschappelijk_onderwijs =
+#       INS_Verblijfsjaren_wetenschappelijk_onderwijs - 1,
+#     INS_Verblijfsjaren_hoger_onderwijs =
+#       INS_Verblijfsjaren_hoger_onderwijs - 1
+#   )
 
-## Deze variabele leidt tot heel veel categorieen omdat dit een aantal is.
-## Voor de univariate plots maken we daarom een categorische variabele hiervan.
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mapping_category(
-    "INS_Verblijfsjaren_wetenschappelijk_onderwijs",
-    "INS_Verblijfsjaren_wetenschappelijk_onderwijs_cat",
-    mapping_table_name = "Mapping_INS_Verblijfsjaren_wetenschappelijk_onderwijs_cat"
-  )
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mapping_category(
-    "INS_Verblijfsjaren_hoger_onderwijs",
-    "INS_Verblijfsjaren_hoger_onderwijs_cat",
-    mapping_table_name = "Mapping_INS_Verblijfsjaren_wetenschappelijk_onderwijs_cat"
-  )
 
 ## Bepaal ahv INS_Postcode_student_1okt_peildatum en INS_Postcode_student_voor_HO of een student
 ## uitwonend is: als de velden gelijk zijn voor een student is deze thuiswonend, als ze verschillend
@@ -84,9 +52,27 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
                                  TRUE
   ))
 
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## ORIGINEEL: Manipuleren Inschrijvingen Deel 3 - Overig.R
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  mutate(INS_Indicatie_voltijd = if_else(INS_Opleidingsvorm_code == 1,
+                                         TRUE, FALSE
+  ))
+
+# Bepaal dubbele studie instelling. Gebruik datums om doorstromers en switchers te filteren
+# (Bijv: afronding B & begin M in één jaar of uitschrijvingen voor 1 feb en inschrijving 1 feb)
+# Gebruik OPL_Code Actueel uniek om joint degrees te filteren
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  group_by(INS_Studentnummer, INS_Inschrijvingsjaar, INS_Datum_inschrijving, INS_Datum_uitschrijving) %>%
+  mutate(
+    INS_Aantal_inschrijvingen_jaar_instelling = length(unique(OPL_Code_actueel)),
+    INS_Aantal_EOI_inschrijvingen_jaar_instelling = sum(
+      INS_Indicatie_eerste_jaars_opleiding_en_instelling == 1
+    )
+  ) %>%
+  ungroup() %>%
+  mutate(INS_Dubbele_studie_instelling = INS_Aantal_inschrijvingen_jaar_instelling > 1)
+
+## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+### 2.2. Middelbaar onderwijs profielen ####
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   mutate(
@@ -192,8 +178,9 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     )
   )
 
+
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-## TEST ####
+### 2.3 Studiejaar & Uitschrijving 1 Feb ####
 
 ## TODO logic aanpassen
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
@@ -265,6 +252,9 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   ))
 
 
+## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+### 2.4 Tussenjaren ####
+
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   ## Maak variabele INS_Tussenjaren_voor_M voor studenten met één of meer
   ## tussenjaren tussen hun bachelor en master
@@ -309,18 +299,29 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho  %>%
                                    INS_Indicatie_Tussenjaar_voor_M))
 
 
+## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+### 2.5 Aansluiting ####
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mutate(INS_Indicatie_voltijd = if_else(INS_Opleidingsvorm_code == 1,
-                                         TRUE, FALSE
-  ))
-
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  group_by(INS_Studentnummer, INS_Inschrijvingsjaar, INS_Datum_inschrijving, INS_Datum_uitschrijving) %>%
   mutate(
-    INS_Aantal_inschrijvingen_jaar_instelling = length(unique(OPL_Code_actueel)),
-    INS_Aantal_EOI_inschrijvingen_jaar_instelling = sum(
-      INS_Indicatie_eerste_jaars_opleiding_en_instelling == 1
-    )
-  ) %>%
-  ungroup() %>%
-  mutate(INS_Dubbele_studie_instelling = INS_Aantal_inschrijvingen_jaar_instelling > 1)
+    ## Aansluiting bepalen obv direct en tussenjaar. Verschil tussen
+    ## switch intern en extern wordt later bepaald
+    INS_Aansluiting =
+      case_when(
+        INS_Direct &
+          INS_Hoogste_vooropleiding_BRIN_1CHO == "21PL" ~
+          "Direct na diploma VU",
+        INS_Direct ~ "Direct na diploma extern",
+        INS_Indicatie_Tussenjaar == TRUE ~ "Tussenjaar",
+        #SUC_Instroom_switch_VU == TRUE ~ "Switch binnen VU",
+        INS_Verblijfsjaar_type_onderwijs_binnen_HO > INS_Studiejaar ~ "Switch / Tweede studie",
+        .default = "Onbekend"
+      )
+  )
+
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## BEWAAR & RUIM OP ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+write_file_proj(Inschrijvingen_1cho)
+
+clear_script_objects()
