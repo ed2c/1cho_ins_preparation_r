@@ -1499,11 +1499,11 @@
       "Version": "0.0.0.9000",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
       "RemoteUsername": "vusaverse",
       "RemoteRepo": "vusa",
       "RemoteRef": "main",
-      "RemoteSha": "a4b9c88168abd7c0ab16070429fb7f99b8c9843f",
+      "RemoteSha": "6a4089263c18f2ecd0f337bb3d9979385bb0634f",
+      "RemoteHost": "api.github.com",
       "Requirements": [
         "BurStMisc",
         "RCurl",
@@ -1537,7 +1537,7 @@
         "vvfiller",
         "xml2"
       ],
-      "Hash": "13f04c33e0e201c5b970f1df7cd55446"
+      "Hash": "94b44456a712e7580e56026346dfbe76"
     },
     "vvfiller": {
       "Package": "vvfiller",
