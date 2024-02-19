@@ -1,5 +1,5 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Inlezen Dec nationaliteitscode.R
+## Inlezen Dec vopl.R
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## R code voor Student Analytics Vrije Universiteit Amsterdam
 ## Copyright 2021 VU
@@ -7,12 +7,12 @@
 ## Contact: vu-analytics@vu.nl
 ## Verspreiding buiten de VU: Ja
 ##
-## Doel: In dit script wordt het Dec_nationaliteitscode.csv omgezet naar RDS en worden
+## Doel: In dit script wordt het Dec_vopl.asc omgezet naar RDS en worden
 ## de kolomnamen omgezet
 ##
 ## Afhankelijkheden: Index.R
 ##
-## Datasets: /1cHO/2020/LEESMIJ en reerentietabellen/Dec_nationaliteitscode.asc
+## Datasets: /1cHO/2020/LEESMIJ en reerentietabellen/Dec_vopl.asc
 ##
 ## Opmerkingen:
 ## 1) Geen
@@ -25,22 +25,21 @@
 
 ## Lees alle benodigde bestanden in:
 Bestandspad <- paste0(
-  config::get("metadata_1cho_decoding_files_dir"), "Dec_nationaliteitscode.asc"
+  config::get("metadata_1cho_decoding_files_dir"), "Croho.asc"
 )
 
-Dec_nationaliteitscode <- read_fwf(
-  Bestandspad,
-  fwf_widths(c(4, 50, 1, 12, 2, 31)),
-  locale = locale(encoding = "windows-1252")
-  )
+Dec_Croho <- read_fwf(Bestandspad,
+                      fwf_widths(c(4, 5, 4, 4, 5, 5, 1, 2, 3, 2, 120, 2, 5)),
+                     locale = locale(encoding = "windows-1252"))
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Bestandsbeschrijving_Dec-bestanden.txt bevat uitleg voor de inhoud van de kolommen
+## Bestandsbeschrijving_Croho.txt bevat uitleg voor de inhoud van de kolommen
 
-## Verwijder accenten en splits kolom X1 in 2 kolommen
-Dec_nationaliteitscode <- Dec_nationaliteitscode %>%
+Dec_Croho <- Dec_Croho %>%
+  ## Filter op instelling omdat historische codes anders over instellingen heen kunnen verschillen
+  filter(X3 == config::get("metadata_institution_BRIN")) %>%
   ## Verwijderen van accenten
   mutate(across(
     everything(),
@@ -48,18 +47,20 @@ Dec_nationaliteitscode <- Dec_nationaliteitscode %>%
   )) %>%
   ## Splits kolom X1 in 2 kolommen
   rename(
-    from = X1,
-    to = X2
+    from = X5,
+    to = X6
   ) %>%
-  select(from, to)
+  select(from, to) %>%
+  distinct()
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-write_file_proj(Dec_nationaliteitscode,
-                name = "Mapping_DEM_Nationaliteit_code_DEM_Nationaliteit_naam",
+##'*INFO* Voor universiteiten is het de croho code in jaar, voor HBO's de actuele code
+write_file_proj(Dec_Croho,
+                name = "Mapping_OPL_Code_in_jaar_OPL_Code_historisch",
                 full_dir = Sys.getenv("MAP_TABLE_DIR"),
                 extensions = "csv")
 

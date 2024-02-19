@@ -34,10 +34,10 @@ mapping_translate <- function(Data, current, new, mapping_table_input = NULL, ma
   if(!is.null(mapping_table_input)) {
     translate <- mapping_table_input
   } else if(!is.null(mapping_table_name)){
-    translate <- utils::read.csv2(paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name), stringsAsFactors = F)
+    translate <- utils::read.csv2(paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name, ".csv"), stringsAsFactors = F)
   } else {
     translate <- utils::read.csv2(paste0(Sys.getenv("MAP_TABLE_DIR"),
-                                         "Mapping_",current,"_",new,".csv", sep= "" ), stringsAsFactors = F )
+                                         "Mapping_",current,"_",new,".csv"))
   }
 
 
@@ -67,6 +67,7 @@ mapping_translate <- function(Data, current, new, mapping_table_input = NULL, ma
 
   return(Data)
 }
+
 
 
 
@@ -106,7 +107,7 @@ mapping_translate2 <- function(df, current1, current2, new, mapping_table_name =
   } else {
     # Deduce location of mapping table based on env var and given reference
     if (!is.null(mapping_table_name)) {
-      mapping_table_file_path <- paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name)
+      mapping_table_file_path <- paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name, ".csv")
 
     } else {
       mapping_table_file_path <- paste0(Sys.getenv("MAP_TABLE_DIR"),
@@ -172,6 +173,139 @@ mapping_translate2 <- function(df, current1, current2, new, mapping_table_name =
 
   return(df)
 }
+
+
+maptbl_config2suffix <- function(config_settings, mapping_table_name = "Mapping_config") {
+
+  ## prepare for mapping_table_n
+  num_settings <- length(config_settings)
+  col_names <- paste0("from", seq_len(num_settings))
+  df <- as.data.frame(matrix(unlist(config_settings), nrow = 1, byrow = TRUE))
+  names(df) <- col_names
+
+  result_df <- mapping_translate_n(
+    df,
+    currents = names(df),
+    "suffix",
+    mapping_table_name = mapping_table_name,
+    KeepOriginal = FALSE
+  )
+
+  file_name_suffix <- result_df %>% pull(suffix)
+
+
+  return(file_name_suffix)
+}
+
+
+
+
+#' Mapping Translate2
+#'
+#' Translates a categorical value into a new categorical value. This function is
+#' set up in such a way that it uses the information in the mapping tables and for this
+#' all such 'mappings' are documented immediately.
+#'
+#' @param dataframe The data frame.
+#' @param current1 A vector of column names that are used
+#' @param new New name.
+#' @param KeepOriginal Defaults to TRUE to keep the original value.
+#' If FALSE then the values of 'current' are not preserved.
+#' @param mapping_table_name Default NULL. If there is an existing mapping table
+#' must be read from the name in the folder
+#' @param mapping_table_object Defaults to NULL. If a mapping
+#' table must be read.
+#' @family mapping
+#' @return A new data frame with new values based on the 'mapping tables'.
+#' @export
+mapping_translate_n <- function(df, currents, new, mapping_table_name = NULL, mapping_table_object = NULL, KeepOriginal = TRUE) {
+
+  #'* INFO* Start with checks and errors
+
+  # If a column already exists with the name of the new variable name
+  if (new %in% colnames(df)) {
+    stop("the specified new column name already exists in the specified dataframe")
+  }
+
+  # Load mappping table, if possible
+  if (!is.null(mapping_table_object)) {
+    mapping_table <- mapping_table_object
+  } else {
+    # Deduce location of mapping table based on env var and given reference
+    if (!is.null(mapping_table_name)) {
+      mapping_table_file_path <- paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name, ".csv")
+
+    } else {
+      mapping_table_file_path <- paste0(Sys.getenv("MAP_TABLE_DIR"),
+                                        "Mapping_",
+                                        paste(currents, collapse = "_and_"),
+                                        new,
+                                        ".csv",
+                                        sep = "")
+    }
+
+    if (file.exists(mapping_table_file_path) == FALSE) {
+      stop(paste("Your mapping table reference leads to a location without a file. The deduced path is: ", mapping_table_file_path, ".\n Please update the reference to the mapping or envvar MAP_TABLE_DIR."))
+    }
+    mapping_table <- utils::read.csv2(mapping_table_file_path)
+  }
+
+  # Check that mapping_table contains the columns "from" and "to". If that
+  # is not so, an error message is given
+  if (!is.null(mapping_table)) {
+    if (length(mapping_table) != length(currents) + 1) {
+      stop(paste(
+        "mapping table must have one more column than the number of currents.\n",
+        "However, mapping table is ", length(mapping_table), " columns long and the number of currents is ", length(currents), ".\n"
+      ))
+    }
+
+    if (!(names(mapping_table)[length(mapping_table)] == "to")) {
+      stop("the last column in the mapping table must be 'to'")
+    }
+  }
+
+  # Get the colnames in the mapping table apart from to
+  froms <- names(mapping_table)[1:length(mapping_table)-1]
+
+  # Create a single string per row by pasting together the values of the columns specified in 'froms'
+  combined_values <- apply(mapping_table[froms], 1, paste, collapse = "-")
+
+  # Check if the length of unique combined values is equal to the number of rows in the table
+  if (nrow(mapping_table) != length(unique(combined_values))) {
+    stop("Mapping table doesn't have combined unique values in the specified fields and is thus ambiguous.")
+  }
+
+
+  #'*INFO* Now apply mapping table
+
+  mapping_table <- mapping_table %>%
+    dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
+
+  df <- df %>%
+    dplyr::mutate(dplyr::across(all_of(currents), as.character, .names = "__temp__{.col}"))
+
+  currents_temp <- paste0("__temp__", currents)
+
+  # Construct the 'by' argument dynamically
+  by_join <- setNames(froms, currents_temp)
+
+  df <- df %>%
+    left_join(mapping_table, by = by_join)
+
+  if (KeepOriginal == FALSE) {
+    df <- df[ , !names(df) %in% currents]
+  }
+
+  colnames(df)[which(names(df) == "to")] <- new
+
+  ## Remove temp columns
+  df <- df[, !grepl("^__temp__", names(df)), drop = FALSE]
+
+  return(df)
+}
+
+
 
 #' mapping fix
 #'
@@ -274,10 +408,10 @@ mapping_category <- function(Data,current,new, mapping_table_input = NULL, mappi
   if(!is.null(mapping_table_input)) {
     categories <- mapping_table_input
   } else if(!is.null(mapping_table_name)){
-    categories <- utils::read.csv2(paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name))
+    categories <- utils::read.csv2(paste0(Sys.getenv("MAP_TABLE_DIR"), mapping_table_name, ".csv"))
   } else {
     categories <- utils::read.csv2(paste0(Sys.getenv("MAP_TABLE_DIR"),
-                                          "Mapping_",current,"_",new,".csv",sep=""))
+                                          "Mapping_",current,"_",new,".csv"))
   }
 
   boundaries <- append(categories$lower,utils::tail(categories$upper,n=1))

@@ -30,39 +30,50 @@ packages_base <- c(
   "grDevices",
   "datasets")
 
+
+# TODO When updating this list, also run outcommented code
 packages_cran <- c(
+  "dataReporter",       # Create a data audit report
+  "rlang",          # Enable complex operations
+  "config",         # Set up configuration files and functions
   "janitor",        # Clean up names from special characters
   "lubridate",      # Work with dates and times
   "purrr",          # Work with functions and vectors
   "readxl",         # Read xlsx
   "readr",          # Read data (csv, tsv, and fwf)
   "slackr",         # Send messages in Slack
-  "stats",          # Perform statistical functions and calculations
+  "stringi",        # Work with other strings
   "stringr",        # Work with strings
   "tibble",         # Edit and create tibbles
   "tidyr",          # Tidy data in the tidyverse environment
   "utils",          # Provide utility functions
   "fst",            # Perform operations with large data files
-  "dplyr"           # Utilise the dplyr environment
+  "dplyr"          # Utilise the dplyr environment
 )
 
+packages_github <- c(
+  "vusa"            # Utilise packages from the VU team
+)
 
-packages_vusa <- c("vvcommander",
-                   "vvauditor",
-                   "vvmover",
-                   "vvconverter",
-                   "vvsculptor",
-                   "vusa")
+# packages_vusa <- c("vvcommander",
+#                    "vvauditor",
+#                    "vvmover",
+#                    "vvconverter",
+#                    "vvsculptor",
+#                    "vusa")
 
 # Combine packages
-packages <- c(packages_base, packages_cran, packages_vusa)
-packages_renv <- c(packages_cran, packages_vusa)
+packages <- c(packages_base, packages_cran, packages_github)
+packages <- packages[packages != "config"]
+packages_renv <- c(packages_cran, packages_github)
 
 
 # Configure renv
 options(renv.snapshot.filter = function(project) {
   return(packages_renv)
 })
+
+renv::snapshot(type = "custom")
 
 renv::restore()
 

@@ -8,7 +8,7 @@ set_all_env_variables <- function(var_name, var_value) {
 }
 
 ##' *INFO*: Dit is momenteel enkel beschikbaar op "main", vandaar volledig bestandspad
-dfSystem_variables <- read_csv2("utils/renviron.csv", show_col_types = FALSE)
+dfSystem_variables <- read_csv2("utils/proj_settings/renviron.csv", show_col_types = FALSE)
 
 ## zet variabelen in R system variables
 pwalk(list(dfSystem_variables$variable, dfSystem_variables$value), set_all_env_variables)

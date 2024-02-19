@@ -42,23 +42,13 @@ Cohorten <- read_file_proj("INS_Cohorten")
 CROHO_per_jaar <- read_file_proj("CROHO_per_jaar",
                         dir = "02_prepared")
 
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-## X. ASSERTIONS ####
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-assert_no_duplicates_in_group(
-  Cohorten,
-  c(
-    "INS_Studentnummer",
-    "INS_Eerste_jaar_opleiding_en_instelling",
-    "INS_Opleidingscode_actueel"
-  )
-)
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2A. BEWERKEN: SUCCESVARIABELEN MBV INS_HERINSCHRIJVING, INS_EXAMEN ####
+## 2. SUCCESVARIABELEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Cohorten <- Cohorten %>%
+  filter(INS_Eerste_jaar_opleiding_en_instelling >= config::get("first_year"))
 
 ## Bepaal voor 8 jaar de volgende nieuwe succesvariabelen, gebruik makend van
 ## INS_Herinschrijving -en INS_Examen-velden:
@@ -90,7 +80,7 @@ Cohorten_succes <- Cohorten %>%
   ## Selecteer per rij de sleutelvelden en de velden die omgeklapt moeten worden.
   select(
     INS_Studentnummer,
-    INS_Opleidingscode_actueel,
+    OPL_Code_in_jaar,
     INS_Eerste_jaar_opleiding_en_instelling,
     starts_with("INS_Examen_na"),
     starts_with("INS_Herinschrijving_na")
@@ -104,7 +94,7 @@ Cohorten_succes <- Cohorten %>%
   gather(
     INS_Herinschrijving_key, INS_Herinschrijving,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling,
     -INS_Herinschrijving_na_1_jaar_vastgezet,
     -starts_with("INS_Examen_na")
@@ -114,7 +104,7 @@ Cohorten_succes <- Cohorten %>%
     -INS_Herinschrijving_key,
     -INS_Herinschrijving,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling,
     -INS_Herinschrijving_na_1_jaar_vastgezet
   ) %>%
@@ -320,7 +310,7 @@ Cohorten_succes <- Cohorten %>%
     key,
     value,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling,
     -Jaar
   )
@@ -334,7 +324,7 @@ Cohorten_succes_samenvatting <- Cohorten_succes %>%
   ## Groepeer velden
   group_by(
     INS_Studentnummer,
-    INS_Opleidingscode_actueel,
+    OPL_Code_in_jaar,
     INS_Eerste_jaar_opleiding_en_instelling,
     key
   ) %>%
@@ -367,7 +357,7 @@ Cohorten_succes_samenvatting <- Cohorten_succes %>%
     SUC_Uitval_HO_aantal_jaar_cohorten,
     SUC_Uitval_vu_aantal_jaar_cohorten,
     -INS_Studentnummer,
-    -INS_Opleidingscode_actueel,
+    -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling
   ) %>%
   ## Stap 2: Selecteer rijen waarvoor SUC_x_aantal_jaar_cohorten een waarde heeft
@@ -400,7 +390,7 @@ Cohorten_succes <- Cohorten_succes %>%
   ## Gebruik "na" of "binnen" in key afhankelijk of het een variabele mbt
   ## diplomarendement betreft.
   mutate(key = case_when(
-    stringr::str_detect(key, coll("Diploma", ignore_case = TRUE)) ~
+    str_detect(key, coll("Diploma", ignore_case = TRUE)) ~
       paste(key, "binnen", Jaar, "jaar_cohorten", sep = "_"),
     TRUE ~
       paste(key, "na_jaar", Jaar, "cohorten", sep = "_")
@@ -417,11 +407,8 @@ Cohorten_succes <- Cohorten_succes %>%
 ## Koppel de succes-tabel aan Cohorten
 Cohorten <- Cohorten %>%
   left_join(Cohorten_succes, by = c(
-           "INS_Studentnummer" =
            "INS_Studentnummer",
-           "INS_Opleidingscode_actueel" =
-           "INS_Opleidingscode_actueel",
-           "INS_Eerste_jaar_opleiding_en_instelling" =
+           "OPL_Code_in_jaar",
            "INS_Eerste_jaar_opleiding_en_instelling"),
             suffix = c("", ".y")) %>%
   select(-ends_with(".y")) %>%
@@ -472,19 +459,17 @@ gc()
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
+
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ## Koppel de succes-samenvatting-tabel aan Cohorten
 Cohorten <- Cohorten %>%
   left_join(Cohorten_succes_samenvatting, by = c(
-      "INS_Studentnummer" =
-        "INS_Studentnummer",
-      "INS_Opleidingscode_actueel" =
-        "INS_Opleidingscode_actueel",
-      "INS_Eerste_jaar_opleiding_en_instelling" =
-        "INS_Eerste_jaar_opleiding_en_instelling"
+      "INS_Studentnummer",
+      "OPL_Code_in_jaar",
+      "INS_Eerste_jaar_opleiding_en_instelling"
     ), suffix = c("", ".y")) %>%
   select(-ends_with(".y")) %>%
   ## Correctie variabele omdat voor jaar 9 de variabele is bepaald nadat
@@ -526,13 +511,14 @@ gc()
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
+
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2B. BEWERKEN: SUCCESVARIABELEN OA TBV TABLEAU, NOMINALE STUDIEDUUR ####
+## 3.SUCCESVARIABELEN, NOMINALE STUDIEDUUR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## Bepaal nieuwe succesvariabelen tbv tableau, mbv nominale studieduur:
@@ -551,8 +537,9 @@ assert_no_duplicates_in_group(Cohorten, c(
 ## Selecteer per studiejaar, per opleiding de nominale studieduur
 CROHO_per_jaar <- CROHO_per_jaar %>%
   select(
-    OPL_Opleidingsnaam_CROHO,
-    INS_Opleidingscode_actueel,
+    OPL_Opleidingsnaam_CROHO_actueel,
+    OPL_Code_in_jaar,
+    OPL_Code_actueel,
     OPL_Nominale_studieduur,
     OPL_Academisch_jaar
   ) %>%
@@ -561,14 +548,14 @@ CROHO_per_jaar <- CROHO_per_jaar %>%
 
 ## Koppel de nominale studeduur aan Cohorten
 Cohorten <- Cohorten %>%
-  mapping_translate(current = "INS_Opleidingscode_actueel", new = "INS_Opleidingsnaam_2002")
+  mapping_translate(current = "OPL_Code_in_jaar", new = "OPL_Naam_in_jaar")
 
 Cohorten <- Cohorten %>%
   left_join(CROHO_per_jaar,
             by = c(
               "INS_Eerste_jaar_opleiding_en_instelling" =
                 "OPL_Academisch_jaar",
-              "INS_Opleidingscode_actueel"
+              "OPL_Code_in_jaar"
             )
   )
 
@@ -578,7 +565,7 @@ Cohorten <- Cohorten %>%
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -631,9 +618,11 @@ Cohorten <- Cohorten %>%
   mutate(
     SUC_Diploma_nominaal_plus1_tm_9_cohorten =
       case_when(
+        SUC_Diploma_verschil_nominaal_aantal_jaar < 0 ~
+          paste0("Nominaal ", SUC_Diploma_verschil_nominaal_aantal_jaar),
         SUC_Diploma_verschil_nominaal_aantal_jaar == 0 ~ "Nominaal",
         SUC_Diploma_verschil_nominaal_aantal_jaar > 0 ~
-          paste0("Nominaal plus ", SUC_Diploma_verschil_nominaal_aantal_jaar),
+          paste0("Nominaal +", SUC_Diploma_verschil_nominaal_aantal_jaar),
         is.na(SUC_Diploma_aantal_jaar_cohorten) ~
           "(Nog) geen diploma",
         # Alle andere gevallen, o.a. als OPL_Nominale_studieduur onbekend is.
@@ -687,7 +676,7 @@ Bepaal_Nominaalplus <- function(df, plus) {
 ## SUC_Diploma_nominaal_cohorten, SUC_Diploma_nominaal_plus1 t/m 5 _cohorten.
 ## SUC_Diploma_nominaal_cohorten
 Cohorten <- Bepaal_Nominaalplus(df = Cohorten, plus = 0) %>%
-  dplyr::rename(
+  rename(
     SUC_Diploma_nominaal_cohorten =
       SUC_Diploma_nominaal_plus0_cohorten
   ) %>%
@@ -732,7 +721,7 @@ Cohorten <- Cohorten %>%
   mutate(
     INS_BaMa =
       if_else(
-        INS_Opleidingscode_actueel < 59999,
+        OPL_Code_in_jaar < 59999,
         "B",
         "M"
       )
@@ -784,13 +773,12 @@ Cohorten <- Cohorten %>%
   ) %>%
   ## Verwijder variabelen die niet meer nodig zijn
   select(
-    -OPL_Nominale_studieduur,
     -INS_Herinschrijving_na_eoi_diploma
   )
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2C. BEWERKEN: SUCCESVARIABELEN MBV DIPLOMA (ON)GELIJKE FASE ####
+## 4. SUCCESVARIABELEN MBV DIPLOMA (ON)GELIJKE FASE ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -844,14 +832,14 @@ Cohorten <- Cohorten %>%
   mapping_translate(
     "INS_Examen_gelijke_fase",
     "SUC_Diploma_typeho_gelijke_fase_cohorten",
-    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten.csv"
+    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten"
   )
 
 Cohorten <- Cohorten %>%
   mapping_translate(
     "INS_Examen_ongelijke_fase",
     "SUC_Diploma_typeho_ongelijke_fase_cohorten",
-    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten.csv"
+    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten"
   )
 
 Cohorten <- Cohorten %>%
@@ -878,7 +866,7 @@ Cohorten <- Cohorten %>%
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 2D. BEWERKEN: INSCHRIJVINGSVARIABELEN ####
+## 5 MAPPPING INSCHRIJVINGSVARIABELEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Cohorten <- Cohorten %>%
@@ -889,16 +877,35 @@ Cohorten <- Cohorten %>%
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## 6 SUC_Type_uitstroom ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+## Bepaal type uitstroom, door de uitval en diploma variabelen samen te voegen.
+Cohorten <- Cohorten %>%
+  mutate(
+    SUC_Type_uitstroom =
+      case_when(
+          SUC_Diploma_nominaal_plus1_tm_9_cohorten != "(Nog) geen diploma" ~
+            SUC_Diploma_nominaal_plus1_tm_9_cohorten, # SUC_Diploma_nominaal_plus_aantal_jaar_omschrijving
+          SUC_Uitval_na_jaar_1_tm_8_cohorten != "Geen uitval" ~
+            SUC_Uitval_na_jaar_1_tm_8_cohorten, #SUC_Uitval_aantal_jaar_omschrijving
+          .default = "Nog studerend"
+          )
+  )
+
+
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+## TODO Werkt momemteel niet, vusa github is nog in ontwikkeling
 ## Controleer of er duplicaten zijn ontstaan
 assert_no_duplicates_in_group(Cohorten, c(
   "INS_Studentnummer",
   "INS_Eerste_jaar_opleiding_en_instelling",
-  "INS_Opleidingscode_actueel"
+  "OPL_Code_in_jaar"
 ))
 
-write_file_proj(Cohorten, "INS_Cohorten")
+write_file_proj(Cohorten)
 
 clear_script_objects()

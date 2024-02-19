@@ -31,7 +31,7 @@ Dec_BRIN_4_nummer <- dfDec_BRIN_4_nummer  %>%
   ## Verwijderen van accenten
   mutate(across(
     everything(),
-    ~ stringi:::stri_trans_general(str = ., id = "Latin-ASCII")
+    ~ stri_trans_general(str = ., id = "Latin-ASCII")
   ))
 
 ## Dit decoderingsbestand leidt tot meerdere mapping tables

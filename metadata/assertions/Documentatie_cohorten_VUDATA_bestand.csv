@@ -1,5 +1,5 @@
 Veldnaam;Veldnaam_export;In_gebruik;Veldtype;p_na;lower;upper;pattern;Uniek;Opmerkingen
-INS_Opleidingscode_actueel;OPLCODEACT;TRUE;numeric;0;;;;TRUE;
+OPL_Code_in_jaar;OPLCODEACT;TRUE;numeric;0;;;;TRUE;
 INS_Eerste_jaar_opleiding_en_instelling;EOIJAAR;TRUE;numeric;0;;;;TRUE;
 INS_Studentnummer;STUDENT_CD;TRUE;numeric;0;;;;TRUE;
 INS_Herinschrijving_na_1_jaar;HER1;TRUE;numeric;13,6939174;;;;FALSE;
