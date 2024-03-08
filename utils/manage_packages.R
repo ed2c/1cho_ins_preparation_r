@@ -48,7 +48,8 @@ packages_cran <- c(
   "tidyr",          # Tidy data in the tidyverse environment
   "utils",          # Provide utility functions
   "fst",            # Perform operations with large data files
-  "dplyr"          # Utilise the dplyr environment
+  "dplyr",          # Utilise the dplyr environment
+  "vvmover"
 )
 
 packages_github <- c(
@@ -67,8 +68,10 @@ packages <- c(packages_base, packages_cran, packages_github)
 packages <- packages[packages != "config"]
 packages_renv <- c(packages_cran, packages_github)
 
-
 # Configure renv
+renv::update("vusa")
+
+
 options(renv.snapshot.filter = function(project) {
   return(packages_renv)
 })

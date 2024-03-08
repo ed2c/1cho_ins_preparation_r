@@ -842,6 +842,21 @@
       ],
       "Hash": "93e9379f4be8c0bf1862dfc7f720193e"
     },
+    "lobstr": {
+      "Package": "lobstr",
+      "Version": "1.1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cpp11",
+        "crayon",
+        "methods",
+        "prettyunits",
+        "rlang"
+      ],
+      "Hash": "f2a94f8fc9db382a642e965339635ad6"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.9.2",
@@ -1038,6 +1053,21 @@
       ],
       "Hash": "14dc9f7a3c91ebb14ec5bb9208a07061"
     },
+    "pryr": {
+      "Package": "pryr",
+      "Version": "0.1.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "codetools",
+        "lobstr",
+        "methods",
+        "stringr"
+      ],
+      "Hash": "cfcbe960eca81ceca61df5fa622693de"
+    },
     "ps": {
       "Package": "ps",
       "Version": "1.7.5",
@@ -1215,12 +1245,51 @@
       ],
       "Hash": "3adb5cc6a5cc5650cb4569204a3209c3"
     },
+    "rstudio.prefs": {
+      "Package": "rstudio.prefs",
+      "Version": "0.1.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cli",
+        "dplyr",
+        "fs",
+        "jsonlite",
+        "purrr",
+        "rappdirs",
+        "rlang",
+        "rstudioapi",
+        "rvest",
+        "tibble"
+      ],
+      "Hash": "3be8c3f1e7a395608c0dbc378a2302ba"
+    },
     "rstudioapi": {
       "Package": "rstudioapi",
       "Version": "0.13",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "06c85365a03fdaf699966cc1d3cf53ea"
+    },
+    "rvest": {
+      "Package": "rvest",
+      "Version": "1.0.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cli",
+        "glue",
+        "httr",
+        "lifecycle",
+        "magrittr",
+        "rlang",
+        "selectr",
+        "tibble",
+        "xml2"
+      ],
+      "Hash": "0bcf0c6f274e90ea314b812a6d19a519"
     },
     "sass": {
       "Package": "sass",
@@ -1266,6 +1335,19 @@
         "rlang"
       ],
       "Hash": "034d322bf3d3c90998716aa225c7a0c8"
+    },
+    "selectr": {
+      "Package": "selectr",
+      "Version": "0.4-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R6",
+        "methods",
+        "stringr"
+      ],
+      "Hash": "3838071b66e0c566d55cc26bd6e27bf4"
     },
     "slackr": {
       "Package": "slackr",
@@ -1339,10 +1421,13 @@
     },
     "this.path": {
       "Package": "this.path",
-      "Version": "1.2.0",
+      "Version": "2.4.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "84ab69d311f439275b98e3eaf728c316"
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "5dd8bff47afd223cc296114a6150e14e"
     },
     "tibble": {
       "Package": "tibble",
@@ -1502,7 +1587,7 @@
       "RemoteUsername": "vusaverse",
       "RemoteRepo": "vusa",
       "RemoteRef": "main",
-      "RemoteSha": "6a4089263c18f2ecd0f337bb3d9979385bb0634f",
+      "RemoteSha": "d42472c05c90f15ebe8ec0f696c0ca703a654bb5",
       "RemoteHost": "api.github.com",
       "Requirements": [
         "BurStMisc",
@@ -1516,17 +1601,21 @@
         "findR",
         "fs",
         "fst",
+        "httr",
         "lintr",
         "lubridate",
         "magrittr",
         "plyr",
+        "pryr",
         "purrr",
         "readr",
         "rex",
         "rlang",
+        "rstudio.prefs",
         "rstudioapi",
         "scriptName",
         "slackr",
+        "stats",
         "stringi",
         "stringr",
         "this.path",
@@ -1534,22 +1623,24 @@
         "tidyr",
         "tidyselect",
         "vroom",
-        "vvfiller",
+        "vvmover",
         "xml2"
       ],
-      "Hash": "94b44456a712e7580e56026346dfbe76"
+      "Hash": "79d84f6c91f36c37be9fd1bced09f8e1"
     },
-    "vvfiller": {
-      "Package": "vvfiller",
-      "Version": "0.6.7",
+    "vvmover": {
+      "Package": "vvmover",
+      "Version": "1.6.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "dplyr",
-        "purrr",
-        "rlang"
+        "magrittr",
+        "readr",
+        "readxl",
+        "utils"
       ],
-      "Hash": "6f3e87f2bb7de7f64617a88f711f5d1a"
+      "Hash": "63a98517187420192640d6c0abee4736"
     },
     "whoami": {
       "Package": "whoami",
