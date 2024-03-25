@@ -34,7 +34,7 @@ CROHO <- CROHO %>%
   mutate(Datum_einde_opleiding = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_opleiding)),
          Datum_einde_instroom = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_instroom)))
 
-if (Sys.getenv("R_CONFIG_ACTIVE") == "synthetic") {
+if (Sys.getenv("R_CONFIG_ACTIVE") %in% c("synthetic", "default")) {
 
   new_rows <- tibble(
     OPL_Instellingscode = config::get("metadata_institution_BRIN"),
