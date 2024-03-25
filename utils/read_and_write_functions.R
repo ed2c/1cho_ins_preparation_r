@@ -652,7 +652,7 @@ read_file_proj <- function(
   }
 
   if (sum(manual_settings, config_settings) == 0) {
-    rlang::abort(paste0("You have not given enough variables to save the file properly.\n",
+    rlang::abort(paste0("You have not given enough variables to read the file properly.\n",
                         "Either add a correct config with current script_path in it or set at least",
                         "the dir and one of the write_* arguments"))
   }

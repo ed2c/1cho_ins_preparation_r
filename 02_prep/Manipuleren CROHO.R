@@ -31,6 +31,45 @@ CROHO <- read_file_proj("CROHO")
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 CROHO <- CROHO %>%
+  mutate(Datum_einde_opleiding = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_opleiding)),
+         Datum_einde_instroom = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_instroom)))
+
+if (Sys.getenv("R_CONFIG_ACTIVE") == "synthetic") {
+
+  new_rows <- tibble(
+    OPL_Instellingscode = config::get("metadata_institution_BRIN"),
+    OPL_Code_in_jaar = c(50000, 60000, 60001, 60002),
+    OPL_Opleidingsnaam_CROHO = c("B Wizardry", "M Wizardry", "M Wizardry (research)", "M Arithmancy (research)"),
+    Datum_begin_opleiding = as.Date(c("1990-09-01", "1990-09-01", "1990-09-01", "1990-09-01")),
+    Datum_einde_opleiding = as.Date(c("2030-09-01", "2030-09-01", "2030-09-01", "2030-09-01")),
+    Datum_einde_instroom = as.Date(c("2030-09-01", "2030-09-01", "2030-09-01", "2030-09-01")),
+    OPL_Nominale_studielast_EC_aantal = c(180, 60, 120, 120)
+  )
+
+  # Function to calculate the mode (most common element)
+  get_mode <- function(v) {
+    uniqv <- unique(na.omit(v))
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+  }
+
+
+  # Calculate mode for each column grouped by OPL_Nominale_studielast_EC_aantal
+  mode_values <- CROHO %>%
+    group_by(OPL_Nominale_studielast_EC_aantal) %>%
+    summarise(across(.cols = everything(), .fns = get_mode), .groups = "drop") %>%
+    select(-any_of(names(new_rows)), OPL_Nominale_studielast_EC_aantal)
+
+  # Prepare to fill missing values in new_rows based on mode_values
+  new_rows <- new_rows %>%
+    left_join(mode_values, by = "OPL_Nominale_studielast_EC_aantal")
+
+  CROHO <- CROHO %>%
+    bind_rows(new_rows)
+
+
+}
+
+CROHO <- CROHO %>%
   ## Pak opleidingen van instelling
   filter(OPL_Instellingscode == config::get("metadata_institution_BRIN")) %>%
   mutate(
@@ -51,7 +90,6 @@ nMax_jaar <- config::get("year")
 CROHO_per_jaar <- CROHO %>%
   mutate(
     OPL_Academisch_jaar = academic_year(Datum_begin_opleiding),
-    Datum_einde_opleiding = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_opleiding)),
     OPL_Academisch_jaar_einde_opleiding = academic_year(Datum_einde_opleiding),
     OPL_Academisch_jaar_einde_opleiding = pmin(OPL_Academisch_jaar_einde_opleiding, nMax_jaar)
   ) %>%
