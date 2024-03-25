@@ -49,7 +49,7 @@ packages_cran <- c(
   "utils",          # Provide utility functions
   "fst",            # Perform operations with large data files
   "dplyr",          # Utilise the dplyr environment
-  "vvmover"
+  "vvmover",
   "vvconverter"
 )
 
