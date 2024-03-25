@@ -57,38 +57,44 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
   ## - Actief of peildatum : keuze voor de minimale code
   ## - Code beeindiging : keuze voor de minimale code
 
-  df_Inschrijvingen_duplicated <- df_Inschrijvingen_duplicated %>%
-    group_by(INS_Studentnummer, OPL_Code_in_jaar, INS_Inschrijvingsjaar) %>%
-    arrange(INS_Indicatie_actief_op_peildatum) %>%
-    ## Neem voor de duplicate rijen de eerste inschrijvings- en de laatste uitschrijvingsdatum
-    mutate(
-      INS_Datum_inschrijving = min(INS_Datum_inschrijving),
-      INS_Datum_uitschrijving = max(INS_Datum_uitschrijving)
-    ) %>%
-    ## Baseer maand inschrijving van en tot op datum inscchrijving en uitschrijving
-    mutate(
-      INS_Maand_inschrijving_van = month(INS_Datum_inschrijving),
-      ## Als datum uitschrijving gelijk is aan augustus, dan hier NA (niet actief uitgeschreven)
-      ## Anders de datum van de uitschrijving nemen + 1 (want uitschrijving is laatste dag vd maand)
-      INS_Maand_inschrijving_tot = if_else(month(INS_Datum_uitschrijving) != 08, month(INS_Datum_uitschrijving) + 1, NA_real_)
-    )%>%
-    ## Neem laagste code van beeindiging mee
-    mutate(
-      INS_Code_beeindiging_inschrijving = min(INS_Code_beeindiging_inschrijving),
-      INS_Soort_inschrijving_1CHO_code = min(INS_Soort_inschrijving_1CHO_code)
-    ) %>%
-    ## Alleen de bovenste waarde meenemen
-    slice(1) %>%
-    ungroup()
+  if (nrow(df_Inschrijvingen_duplicated) > 0) {
+    message("Duplicated rows found in INS_Inschrijvingen. Fixing duplicates.")
 
-  ## Verwijder alle waarden die duplicates hebben uit inschrijvigen 1cho en voeg bovenstaande niet duplicate set toe
-  INS_Inschrijvingen <- INS_Inschrijvingen %>%
-    anti_join(df_Inschrijvingen_duplicated, by = c(
-      "INS_Studentnummer",
-      "INS_Inschrijvingsjaar",
-      "OPL_Code_in_jaar"
-    )) %>%
-    bind_rows(df_Inschrijvingen_duplicated)
+
+    df_Inschrijvingen_duplicated <- df_Inschrijvingen_duplicated %>%
+      group_by(INS_Studentnummer, OPL_Code_in_jaar, INS_Inschrijvingsjaar) %>%
+      arrange(INS_Indicatie_actief_op_peildatum_omschrijving) %>%
+      ## Neem voor de duplicate rijen de eerste inschrijvings- en de laatste uitschrijvingsdatum
+      mutate(
+        INS_Datum_inschrijving = min(INS_Datum_inschrijving),
+        INS_Datum_uitschrijving = max(INS_Datum_uitschrijving)
+      ) %>%
+      ## Baseer maand inschrijving van en tot op datum inscchrijving en uitschrijving
+      mutate(
+        INS_Maand_inschrijving_van = month(INS_Datum_inschrijving),
+        ## Als datum uitschrijving gelijk is aan augustus, dan hier NA (niet actief uitgeschreven)
+        ## Anders de datum van de uitschrijving nemen + 1 (want uitschrijving is laatste dag vd maand)
+        INS_Maand_inschrijving_tot = if_else(month(INS_Datum_uitschrijving) != 08, month(INS_Datum_uitschrijving) + 1, NA_real_)
+      )%>%
+      ## Neem laagste code van beeindiging mee
+      mutate(
+        INS_Code_beeindiging_inschrijving = min(INS_Code_beeindiging_inschrijving),
+        INS_Soort_inschrijving_1CHO_code = min(INS_Soort_inschrijving_1CHO_code)
+      ) %>%
+      ## Alleen de bovenste waarde meenemen
+      slice(1) %>%
+      ungroup()
+
+    ## Verwijder alle waarden die duplicates hebben uit inschrijvigen 1cho en voeg bovenstaande niet duplicate set toe
+    INS_Inschrijvingen <- INS_Inschrijvingen %>%
+      anti_join(df_Inschrijvingen_duplicated, by = c(
+        "INS_Studentnummer",
+        "INS_Inschrijvingsjaar",
+        "OPL_Code_in_jaar"
+      )) %>%
+      bind_rows(df_Inschrijvingen_duplicated)
+
+  }
 
 }
 
@@ -100,8 +106,8 @@ if (config::get("fix_duplicated_enrollments") == TRUE) {
 # Set filename based on config
 file_name <- as_label(expr(INS_Inschrijvingen))
 file_name_suffix <- maptbl_config2suffix(config::get("data_manipulation_config"))
-file_name <- paste0(file_name, file_name_suffix, "_", config::get("metadata_institution_name"))
+file_name <- paste0(file_name, file_name_suffix, "_", config::get("metadata_institution_save_name"))
 
-write_file_proj_out(INS_Inschrijvingen, file_name)
+write_file_proj(INS_Inschrijvingen, file_name)
 
 clear_script_objects()
