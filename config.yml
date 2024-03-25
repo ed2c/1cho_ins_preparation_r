@@ -10,6 +10,7 @@ vu:
   data_1cho_enrollments_file_path: !expr file.path("data/00_raw", year, data_1cho_enrollments_rel_file_path)
   metadata_1cho_decoding_files_dir: "data/00_raw/2022/decoding_files/"
   metadata_institution_name: "VU"
+  metadata_institution_save_name: metadata_institution_name
   metadata_institution_BRIN: "21PL"
 
   # The following settings influence what data manipulations are taken.
@@ -21,6 +22,7 @@ vu:
 
 synthetic:
   inherits: vu
+  metadata_institution_save_name: "synthetic"
   data_1cho_starting_cohorts_rel_file_path: "CEDA_Cohorten_synthetic.zip"
   data_1cho_enrollments_rel_file_path: "CEDA_1CHO_synthetic.zip"
   data_1cho_starting_cohorts_file_path: !expr file.path("data/00_raw", year, data_1cho_starting_cohorts_rel_file_path)
