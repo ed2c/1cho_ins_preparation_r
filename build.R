@@ -9,9 +9,9 @@
 sFolders <- write_config_proj() %>%
   pull(script_dir)
 
- sScripts_to_run <- sFolders %>%
-   map(., list.files) %>%
+sScripts_to_run <- sFolders %>%
+   map(., ~paste0(., "/", list.files(.))) %>%
    unlist()
 
 
-walk(sScipts_to_run, source)
+walk(sScripts_to_run, source)
