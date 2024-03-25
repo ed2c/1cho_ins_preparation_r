@@ -24,6 +24,7 @@
 ## Lees alle benodigde bestanden in:
 bestandspad <- config::get("data_1cho_enrollments_file_path")
 
+
 ## Lees het bestand Inschrijvingen in uit het zip-bestand
 Inschrijvingen_1cho <- unzip_read_delim(
   bestandspad,

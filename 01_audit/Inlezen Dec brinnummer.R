@@ -70,4 +70,4 @@ write_file_proj(Dec_BRIN_4_plaats,
                 full_dir = Sys.getenv("MAP_TABLE_DIR"),
                 extensions = "csv")
 
-vvcommander::clear_script_objects()
+clear_script_objects()

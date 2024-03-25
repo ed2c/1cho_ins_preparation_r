@@ -25,8 +25,8 @@
 ## TODO Evaluate the usage of zip files later on
 sFile_path_Cohorten_VUDATA <- config::get("data_1cho_starting_cohorts_file_path")
 
-dfCohorten_VUDATA <- unzip_read_delim(sFile_path_Cohorten_VUDATA, NULL,
-  ",",
+dfCohorten_VUDATA <- unzip_read_delim(sFile_path_Cohorten_VUDATA,
+  delim = ",",
   quote = "\"",
   col_types = cols(
     STUDENT_CD = col_character(),
