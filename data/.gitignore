@@ -1,6 +1,6 @@
 # Ignore everything
-*
+*.*
+!*synthetic.zip
+!*synthetic.rds
 # Except
 !.gitignore
-!*synthetic*
-
