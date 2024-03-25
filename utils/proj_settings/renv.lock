@@ -1020,6 +1020,27 @@
       ],
       "Hash": "6b8177fd19982f0020743fadbfdbd933"
     },
+    "polyglotr": {
+      "Package": "polyglotr",
+      "Version": "1.4.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "RCurl",
+        "dplyr",
+        "httr",
+        "jsonlite",
+        "magrittr",
+        "purrr",
+        "rlang",
+        "rvest",
+        "stringr",
+        "tibble",
+        "urltools"
+      ],
+      "Hash": "bdc2bfc1db4df4de778fafd0690f4bf0"
+    },
     "prettyunits": {
       "Package": "prettyunits",
       "Version": "1.1.1",
@@ -1508,6 +1529,16 @@
       ],
       "Hash": "5ac22900ae0f386e54f1c307eca7d843"
     },
+    "triebeard": {
+      "Package": "triebeard",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Rcpp"
+      ],
+      "Hash": "642507a148b0dd9b5620177e0a044413"
+    },
     "tzdb": {
       "Package": "tzdb",
       "Version": "0.4.0",
@@ -1518,6 +1549,19 @@
         "cpp11"
       ],
       "Hash": "f561504ec2897f4d46f0c7657e488ae1"
+    },
+    "urltools": {
+      "Package": "urltools",
+      "Version": "1.7.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods",
+        "triebeard"
+      ],
+      "Hash": "e86a704261a105f4703f653e05defa3e"
     },
     "utf8": {
       "Package": "utf8",
@@ -1587,7 +1631,7 @@
       "RemoteUsername": "vusaverse",
       "RemoteRepo": "vusa",
       "RemoteRef": "main",
-      "RemoteSha": "d42472c05c90f15ebe8ec0f696c0ca703a654bb5",
+      "RemoteSha": "c56624baa4fd2daca0d1b698eb3cdec5b753164b",
       "RemoteHost": "api.github.com",
       "Requirements": [
         "BurStMisc",
@@ -1626,7 +1670,22 @@
         "vvmover",
         "xml2"
       ],
-      "Hash": "79d84f6c91f36c37be9fd1bced09f8e1"
+      "Hash": "4013af08775fb1a05fe513429d4ec083"
+    },
+    "vvconverter": {
+      "Package": "vvconverter",
+      "Version": "0.5.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "checkmate",
+        "dplyr",
+        "lubridate",
+        "magrittr",
+        "polyglotr",
+        "stringr"
+      ],
+      "Hash": "6348c55a70e07408d9eccf3810597cc2"
     },
     "vvmover": {
       "Package": "vvmover",

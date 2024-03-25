@@ -50,6 +50,7 @@ packages_cran <- c(
   "fst",            # Perform operations with large data files
   "dplyr",          # Utilise the dplyr environment
   "vvmover"
+  "vvconverter"
 )
 
 packages_github <- c(
@@ -69,7 +70,7 @@ packages <- packages[packages != "config"]
 packages_renv <- c(packages_cran, packages_github)
 
 # Configure renv
-renv::update("vusa")
+#renv::update("vusa")
 
 
 options(renv.snapshot.filter = function(project) {
