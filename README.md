@@ -1,11 +1,11 @@
 # 1cho_r_data_prep
 
 | Col1                                                                                                                                                                                                      | No  | Partly | Yes |
-|---------------------------------------------------|-------|-------|-------|
+|--------------------------------------------------------------------------------|-----|--------|-----|
 | The code runs successfully                                                                                                                                                                                |     |        | ✅  |
 | There is a config file which has a setting for at least every institution-specific setting                                                                                                                |     |        | ✅  |
 | A build file. All code can be run (see 1) by triggering one file                                                                                                                                          |     |        | ✅  |
-| An instruction file which explains at least the goal of the data manipulation in this repository and the context (how the acquire the start data or a reference to a working example of a final product). |     | 🔜     |     |
+| An instruction file which explains at least the goal of the data manipulation in this repository and the context (how the acquire the start data or a reference to a working example of a final product).  |     | 🔜     |     |
 | clear structure in line with the language-specific best practices for data science                                                                                                                        |     |        | ✅  |
 | Data dictionaries at start and end                                                                                                                                                                        |     |        |     |
 | Well styled code, also language specific                                                                                                                                                                  |     |        | ✅  |
