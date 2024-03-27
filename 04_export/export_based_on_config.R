@@ -108,6 +108,6 @@ file_name <- as_label(expr(INS_Inschrijvingen))
 file_name_suffix <- maptbl_config2suffix(config::get("data_manipulation_config"))
 file_name <- paste0(file_name, file_name_suffix, "_", config::get("metadata_institution_save_name"))
 
-write_file_proj(INS_Inschrijvingen, file_name)
+write_file_proj_out(INS_Inschrijvingen, file_name)
 
 clear_script_objects()

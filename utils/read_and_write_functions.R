@@ -846,7 +846,7 @@ write_file_proj_out <- function(
 
   # write file
   write_file_proj(
-    data = data,
+    object = data,
     name = name,
     ...
   )
