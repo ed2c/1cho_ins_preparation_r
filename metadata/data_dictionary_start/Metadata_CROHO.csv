@@ -1,0 +1,52 @@
+names_croho,types,widths,position
+Brinnummer,character,4,1
+Brinvolgnummer,integer,2,5
+Naam onderwijsinstelling,character,70,7
+Gemeentenaam,character,24,77
+Onderdeel,character,70,101
+Subonderdeel,character,70,171
+Opleidingscode,integer,5,241
+Naam opleiding voluit,character,225,246
+Internationale naam,character,225,471
+Opleidingsvorm,character,8,696
+Datum begin opleiding,character,10,704
+Datum einde instroom,character,10,714
+Datum einde opleiding,character,10,724
+Studielast,integer,4,734
+Grondslag studielast,character,15,738
+Studielast VT,integer,3,753
+Propedeutisch examen,character,3,756
+Eisen te verrichten werkzaamheden,character,3,759
+Bekostiging,character,15,762
+Bekostigingsduur,integer,5,777
+Inschrijving met deficiëntie,character,3,782
+Beroepsvereisten,character,3,785
+Datum accreditatiebesluit/melding,character,10,788
+Datum begin accreditatie,character,10,798
+Datum uitstel tot accreditatie,character,10,808
+Datum einde instroom accreditatie,character,10,818
+Datum vervallen accreditatie,character,10,828
+Datum einde afbouw accreditatie,character,10,838
+Reden uitstel,character,150,848
+Indicatie aanmelding,character,10,998
+Indicatie soort fixus,character,17,1008
+Indicatie decentrale selectie,character,3,1025
+Vervaldatum decentrale selectie,character,10,1028
+Indicatie aanvullende eisen,character,3,1038
+Afwijkende VSL code RASP,character,5,1041
+Code stand record,character,10,1046
+Bekostigingsniveau,character,5,1056
+Relatiesoort,character,20,1061
+BRIN relatie,character,4,1081
+Opl.code relatie,integer,5,1085
+Ind. Intensief progr.,character,3,1090
+Selectie-eisen Intensief progr.,character,3,1093
+Verhoogd coll.geld Intensief progr.,character,3,1096
+Onderwijscapaciteit,integer,4,1099
+Versneld traject,character,3,1103
+Graad,character,20,1106
+Graadtoevoeging,character,80,1126
+Inleverdatum,character,10,1206
+Datum voorwaarden,character,10,1216
+Datum intrekking,character,10,1226
+...51,character,1,1236
