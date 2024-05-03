@@ -24,10 +24,17 @@
 ## Inlezen documentatie bestand
 CROHO_naming <- read_documentation("Documentatie_CROHO.csv")
 
-file_path <- "data/00_raw/CrohoActueel17-10-2022.xlsx"
+## To be downloaded from DUO
+file_path <- "data/00_raw/CrohoAct.txt"
+
+dfMeta <- read.csv("metadata/data_dictionary_start/Metadata_CROHO.csv")
 
 ## Lees Het crohobestand in
-CROHO <- read_xlsx(file_path)
+CROHO <- LaF::laf_open_fwf(file_path,
+                           column_widths = dfMeta$widths,
+                           column_names = dfMeta$names_croho,
+                           column_types = dfMeta$types
+                          )[,]
 
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
