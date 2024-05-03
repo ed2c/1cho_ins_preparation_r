@@ -41,6 +41,18 @@
       ],
       "Hash": "a56a6365b3fa73293ea8d084be0d9bb0"
     },
+    "LaF": {
+      "Package": "LaF",
+      "Version": "0.8.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Rcpp",
+        "methods",
+        "utils"
+      ],
+      "Hash": "f6e650a4ea4c8765c612c3fa8de17f92"
+    },
     "Matrix": {
       "Package": "Matrix",
       "Version": "1.5-4.1",
