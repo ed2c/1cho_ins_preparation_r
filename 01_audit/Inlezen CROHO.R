@@ -27,7 +27,7 @@ CROHO_naming <- read_documentation("Documentatie_CROHO.csv")
 ## To be downloaded from DUO
 file_path <- "data/00_raw/CrohoAct.txt"
 
-CROHO_import_definitions <- read.csv(paste0(Sys.getenv("METADATA_IMPORT_DEFINITIONS_DIR"), "CROHO.csv"))
+CROHO_import_definitions <- read_import_definitions("CROHO.csv")
 
 ## Lees Het crohobestand in
 CROHO <- LaF::laf_open_fwf(file_path,

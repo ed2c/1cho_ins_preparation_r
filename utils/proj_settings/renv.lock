@@ -1640,11 +1640,11 @@
       "Version": "0.0.0.9000",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteUsername": "vusaverse",
       "RemoteRepo": "vusa",
       "RemoteRef": "main",
-      "RemoteSha": "c56624baa4fd2daca0d1b698eb3cdec5b753164b",
-      "RemoteHost": "api.github.com",
+      "RemoteSha": "80d317fc214634bb879da2e5e11f3246f37b820d",
       "Requirements": [
         "BurStMisc",
         "RCurl",
