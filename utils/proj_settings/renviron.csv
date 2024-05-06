@@ -6,6 +6,7 @@ UTILS_HASH_ALGORITHM;sha256;
 MAP_TABLE_DIR;metadata/mapping_tables/;
 METADATA_MAPPING_TABLES_DIR;metadata/mapping_tables/;
 METADATA_DICTIONARY_END_DIR;metadata/data_dictionary_end/;
+METADATA_IMPORT_DEFINITIONS_DIR;metadata/import_definitions/;
 DOCUMENTATION_DIR;metadata/assertions/;
 METADATA_ASSERTIONS_DIR;metadata/assertions/;
 OUT_FILTER_COL;;
