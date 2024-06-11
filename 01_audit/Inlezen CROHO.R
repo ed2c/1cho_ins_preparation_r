@@ -27,14 +27,20 @@ CROHO_naming <- read_documentation("Documentatie_CROHO.csv")
 ## To be downloaded from DUO
 file_path <- "data/00_raw/CrohoAct.txt"
 
-dfMeta <- read.csv("metadata/data_dictionary_start/Metadata_CROHO.csv")
+CROHO_import_definitions <- read_import_definitions("CROHO.csv")
 
 ## Lees Het crohobestand in
 CROHO <- LaF::laf_open_fwf(file_path,
-                           column_widths = dfMeta$widths,
-                           column_names = dfMeta$names_croho,
-                           column_types = dfMeta$types
+                           column_widths = CROHO_import_definitions$widths,
+                           column_names = CROHO_import_definitions$names_croho,
+                           column_types = CROHO_import_definitions$types
                           )[,]
+
+colnames(CROHO) <- CROHO_import_definitions$names_croho
+
+CROHO <- CROHO %>%
+  mutate_all(~replace(., . == "", NA)) %>%
+  mutate(`Datum begin opleiding` = as.POSIXct(`Datum begin opleiding`))
 
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
