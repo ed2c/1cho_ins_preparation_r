@@ -26,6 +26,18 @@
       ],
       "Hash": "72f87e0092e39384aee16df8d67d7410"
     },
+    "LaF": {
+      "Package": "LaF",
+      "Version": "0.8.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Rcpp",
+        "methods",
+        "utils"
+      ],
+      "Hash": "f6e650a4ea4c8765c612c3fa8de17f92"
+    },
     "MASS": {
       "Package": "MASS",
       "Version": "7.3-60",

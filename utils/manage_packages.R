@@ -33,7 +33,8 @@ packages_base <- c(
 
 # TODO When updating this list, also run outcommented code
 packages_cran <- c(
-  "dataReporter",       # Create a data audit report
+  "LaF",            # Read data files without encoding (like ASCII)
+  "dataReporter",   # Create a data audit report
   "rlang",          # Enable complex operations
   "config",         # Set up configuration files and functions
   "janitor",        # Clean up names from special characters
