@@ -1,5 +1,4 @@
 
-## TODO file.path gebruiken
 
 #' Read Configuration Project
 #'
@@ -619,8 +618,9 @@ read_file_proj <- function(
 ) {
 
   ## Get the script path relative to the working directory
-  script_path <- stringr::str_remove(this.path::this.path(), paste0(getwd(), "/"))
+  script_path <- stringr::str_remove(this.path::sys.path(), paste0(getwd(), "/"))
 
+  message(script_path)
   # Check the manual and config setting for completeness
 
   # Both either base_dir or dir AND extension must be set to be manual
@@ -704,9 +704,11 @@ read_file_proj <- function(
   }
 
   file_name <- paste(name, extension, sep = ".")
+  message(file_name)
   file_path_complete <- paste(dir_complete, file_name, sep = "/")
   file_path_complete <- stringr::str_replace_all(file_path_complete, stringr::fixed("//"), "/")
 
+  message(file_path_complete)
 
   # read with function based on extension
   if (extension == "rds") {
@@ -768,6 +770,185 @@ read_file_proj <- function(
 }
 
 
+
+write_file_proj <- function(
+    object,
+    name = NULL,
+    settings_df = write_config_proj(),
+    settings_type = NULL,
+    sub_dir = NA_character_,
+    base_dir = NULL,
+    dir = NULL,
+    add_branch = NULL,
+    full_dir = NULL,
+    extensions = NULL,
+    extra_ext = NULL,
+    rds_version = 3,
+    csv_na = "",
+    csv_sep = ";",
+    csv_dec = ",",
+    fst_compress = 100,
+    ...
+) {
+
+  ## Set the object name to the file name if not given
+  if (is.null(name)) {
+    name <- deparse(substitute(object))
+  }
+
+  ## Get the script path relative to the working directory
+  script_path <- stringr::str_remove(this.path::sys.path(), paste0(getwd(), "/"))
+
+  message(script_path)
+
+  # Set and then check the manual and config setting for completeness
+
+  # Both either base_dir or dir AND one write must be set to be manual
+  if (sum(max(!is.null(dir), !is.null(base_dir)), !is.null(extensions)) < 2) {
+    manual_settings <- FALSE
+  } else {
+    manual_settings <- TRUE
+  }
+
+  if (is.null(settings_df)) {
+    config_settings <- FALSE
+  } else {
+    config_settings <- TRUE
+    settings_script_dir <- settings_df %>%
+      dplyr::filter(str_detect(script_path, script_dir))
+
+    # When the script_path is not in the config file set to FALSE
+    if (nrow(settings_script_dir) == 0) {
+      config_settings <- FALSE
+    } else {
+      # Some directories can have additional types
+      # Deal with this type, this generates an error if type is incorrectly supplied
+      settings_script_dir <- filter_settings_on_type(settings_script_dir, settings_type)
+
+      if(!is.na(settings_script_dir$message)) {
+        rlang::inform(settings_script_dir$message,
+                      .frequency = "once",
+                      .frequency_id = "write_file_proj_message")
+
+      }
+    }
+  }
+
+  # Abort if no settings
+  if (sum(manual_settings, config_settings) == 0) {
+    rlang::abort(paste0("You have not given enough variables to save the file properly.\n,
+                          Either add a correct config with current directory in it or set at least
+                          the dir and one of the write_* arguments"))
+  }
+
+  ## Set the dir variables based on manual or config settings
+  if (is.null(base_dir) && config_settings == TRUE) {
+    base_dir <- settings_script_dir[["base_data_dir"]]
+  }
+
+  if (is.null(add_branch) && config_settings == TRUE) {
+    add_branch <- settings_script_dir[["add_branch"]]
+  }
+
+  ##' *INFO* System call to get the branch
+  if (add_branch == TRUE) {
+    branch <- system("git branch --show-current", intern = TRUE)
+  } else {
+    branch <- NA_character_
+  }
+
+  if (is.null(dir) && config_settings == TRUE) {
+    dir <- settings_script_dir[["data_dir"]]
+  }
+
+  if (is.null(extensions) && config_settings == TRUE) {
+    extensions <- settings_script_dir[["extensions"]]
+  }
+
+  if (!is.null(extra_ext)) {
+    extensions <- c(extensions, extra_ext)
+  }
+
+  ## Create complete dir and file path, remove any empty values and double slashes
+  if (!is.null(full_dir)) {
+    dir_complete <- full_dir
+  } else {
+    dir_elements <- c(base_dir, branch, dir, sub_dir)
+    dir_elements <- dir_elements[!is.na(dir_elements)]
+    dir_complete <- paste(dir_elements, collapse = .Platform$file.sep)
+    dir_complete <- stringr::str_replace_all(dir_complete, stringr::fixed("//"), "/")
+  }
+
+  if (dir.exists(dir_complete) == FALSE) {
+    rlang::abort(paste0("The constructed directory doesn't exist.\n",
+                        'Run dir.create("',dir_complete, '", recursive = TRUE) or change the input or config file.\n',
+                        "For instance, use (base_)dir = '', to overwrite the (base_)dir in the config file.")
+    )
+  }
+
+  file_path_complete <- paste(dir_complete, name, sep = "/")
+  file_path_complete <- stringr::str_replace_all(file_path_complete, stringr::fixed("//"), "/")
+  message(file_path_complete)
+
+
+  ## write
+  if ("csv" %in% extensions) {
+    data.table::fwrite(object,
+                       paste0(file_path_complete, ".csv"),
+                       na = csv_na,
+                       sep = csv_sep,
+                       dec = csv_dec
+    )
+  }
+
+  if ("fst" %in% extensions) {
+    fst::write_fst(object,
+                   paste0(file_path_complete, ".fst"),
+                   compress = fst_compress,
+                   ...)
+  }
+
+  if ("rds" %in% extensions) {
+    saveRDS(object,
+            paste0(file_path_complete,".rds"),
+            version = rds_version,
+            ...)
+  }
+}
+
+
+
+
+## TODO file.path gebruiken
+
+#' Read Configuration Project
+#'
+#' This function is responsible for reading and saving configurations for a project. It retrieves
+#' the configuration path from the system environment variable "read_and_write_config".
+#'
+#' @return A data frame of the read and save configurations if the configuration file is valid.
+#' If there are issues with the configuration file, the function issues a warning and returns NULL.
+#'
+#' @note For more information on how to use this function, see the vignette:
+#' vignette("Using the read_and_write_config_proj function") and more elaborate documentation at:
+#'  https://r.mtdv.me/load_save_config.
+#'
+#' @examples
+#' \dontrun{
+#' read_and_write_config_proj()
+#' }
+#'
+#' Create a data frame with the given column names
+#' colnames_config <- c(
+#'   "script_dir",
+#'   "type",
+#'   "data_dir",
+#'   "base_data_dir",
+#'   "add_branch",
+#'   "extension",
+#'   "message",
+#'   "notes"
+#' )
 
 
 ## TODO this doesn't work yet
@@ -882,149 +1063,5 @@ write_file_proj_out <- function(
     )
   }
 
-}
-
-
-
-write_file_proj <- function(
-    object,
-    name = NULL,
-    settings_df = write_config_proj(),
-    settings_type = NULL,
-    sub_dir = NA_character_,
-    base_dir = NULL,
-    dir = NULL,
-    add_branch = NULL,
-    full_dir = NULL,
-    extensions = NULL,
-    extra_ext = NULL,
-    rds_version = 3,
-    csv_na = "",
-    csv_sep = ";",
-    csv_dec = ",",
-    fst_compress = 100,
-    ...
-) {
-
-  ## Set the object name to the file name if not given
-  if (is.null(name)) {
-    name <- deparse(substitute(object))
-  }
-
-  ## Get the script path relative to the working directory
-  script_path <- stringr::str_remove(this.path::this.path(), paste0(getwd(), "/"))
-
-  # Set and then check the manual and config setting for completeness
-
-  # Both either base_dir or dir AND one write must be set to be manual
-  if (sum(max(!is.null(dir), !is.null(base_dir)), !is.null(extensions)) < 2) {
-    manual_settings <- FALSE
-  } else {
-    manual_settings <- TRUE
-  }
-
-  if (is.null(settings_df)) {
-    config_settings <- FALSE
-  } else {
-    config_settings <- TRUE
-    settings_script_dir <- settings_df %>%
-      dplyr::filter(str_detect(script_path, script_dir))
-
-    # When the script_path is not in the config file set to FALSE
-    if (nrow(settings_script_dir) == 0) {
-      config_settings <- FALSE
-    } else {
-      # Some directories can have additional types
-      # Deal with this type, this generates an error if type is incorrectly supplied
-      settings_script_dir <- filter_settings_on_type(settings_script_dir, settings_type)
-
-      if(!is.na(settings_script_dir$message)) {
-        rlang::inform(settings_script_dir$message,
-                      .frequency = "once",
-                      .frequency_id = "write_file_proj_message")
-
-      }
-    }
-  }
-
-  # Abort if no settings
-  if (sum(manual_settings, config_settings) == 0) {
-    rlang::abort(paste0("You have not given enough variables to save the file properly.\n,
-                          Either add a correct config with current directory in it or set at least
-                          the dir and one of the write_* arguments"))
-  }
-
-  ## Set the dir variables based on manual or config settings
-  if (is.null(base_dir) && config_settings == TRUE) {
-    base_dir <- settings_script_dir[["base_data_dir"]]
-  }
-
-  if (is.null(add_branch) && config_settings == TRUE) {
-    add_branch <- settings_script_dir[["add_branch"]]
-  }
-
-  ##' *INFO* System call to get the branch
-  if (add_branch == TRUE) {
-    branch <- system("git branch --show-current", intern = TRUE)
-  } else {
-    branch <- NA_character_
-  }
-
-  if (is.null(dir) && config_settings == TRUE) {
-    dir <- settings_script_dir[["data_dir"]]
-  }
-
-  if (is.null(extensions) && config_settings == TRUE) {
-    extensions <- settings_script_dir[["extensions"]]
-  }
-
-  if (!is.null(extra_ext)) {
-    extensions <- c(extensions, extra_ext)
-  }
-
-  ## Create complete dir and file path, remove any empty values and double slashes
-  if (!is.null(full_dir)) {
-    dir_complete <- full_dir
-  } else {
-    dir_elements <- c(base_dir, branch, dir, sub_dir)
-    dir_elements <- dir_elements[!is.na(dir_elements)]
-    dir_complete <- paste(dir_elements, collapse = .Platform$file.sep)
-    dir_complete <- stringr::str_replace_all(dir_complete, stringr::fixed("//"), "/")
-  }
-
-  if (dir.exists(dir_complete) == FALSE) {
-    rlang::abort(paste0("The constructed directory doesn't exist.\n",
-                        'Run dir.create("',dir_complete, '", recursive = TRUE) or change the input or config file.\n',
-                        "For instance, use (base_)dir = '', to overwrite the (base_)dir in the config file.")
-    )
-  }
-
-  file_path_complete <- paste(dir_complete, name, sep = "/")
-  file_path_complete <- stringr::str_replace_all(file_path_complete, stringr::fixed("//"), "/")
-
-
-  ## write
-  if ("csv" %in% extensions) {
-    data.table::fwrite(object,
-                       paste0(file_path_complete, ".csv"),
-                       na = csv_na,
-                       sep = csv_sep,
-                       dec = csv_dec
-    )
-  }
-
-  if ("fst" %in% extensions) {
-    fst::write_fst(object,
-                   paste0(file_path_complete, ".fst"),
-                   compress = fst_compress,
-                   ...)
-  }
-
-  if ("rds" %in% extensions) {
-    saveRDS(object,
-            paste0(file_path_complete,".rds"),
-            version = rds_version,
-            ...)
-  }
 }
 
