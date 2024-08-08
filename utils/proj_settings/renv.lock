@@ -53,18 +53,6 @@
       ],
       "Hash": "a56a6365b3fa73293ea8d084be0d9bb0"
     },
-    "LaF": {
-      "Package": "LaF",
-      "Version": "0.8.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Rcpp",
-        "methods",
-        "utils"
-      ],
-      "Hash": "f6e650a4ea4c8765c612c3fa8de17f92"
-    },
     "Matrix": {
       "Package": "Matrix",
       "Version": "1.5-4.1",
@@ -1652,11 +1640,11 @@
       "Version": "0.0.0.9000",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
       "RemoteUsername": "vusaverse",
       "RemoteRepo": "vusa",
       "RemoteRef": "main",
-      "RemoteSha": "80d317fc214634bb879da2e5e11f3246f37b820d",
+      "RemoteSha": "c56624baa4fd2daca0d1b698eb3cdec5b753164b",
+      "RemoteHost": "api.github.com",
       "Requirements": [
         "BurStMisc",
         "RCurl",
