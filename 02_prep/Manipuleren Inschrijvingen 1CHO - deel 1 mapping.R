@@ -14,7 +14,9 @@ CROHO_per_jaar <- read_file_proj("CROHO_per_jaar",
                                  dir = "02_prepared")
 
 
-Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
+#Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
+Inschrijvingen_1cho <- read_file_proj("INS_eencijfer_enrollments")
+
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
