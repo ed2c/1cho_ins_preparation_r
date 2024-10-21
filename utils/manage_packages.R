@@ -78,7 +78,7 @@ options(renv.snapshot.filter = function(project) {
   return(packages_renv)
 })
 
-renv::snapshot(type = "custom")
+# renv::snapshot(type = "custom")
 
 renv::restore()
 
