@@ -10,50 +10,19 @@
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-CROHO_per_jaar <- read_file_proj("CROHO_per_jaar",
-                                 dir = "02_prepared")
-
-
-#Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata")
-Inschrijvingen_1cho <- read_file_proj("INS_eencijfer_enrollments")
-
+Inschrijvingen_1cho_basis <- read_file_proj("INS_eencijfer_enrollments")
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-### 2.1 CROHO info koppelen ####
-
-CROHO_per_jaar <- CROHO_per_jaar %>%
-  select(
-    OPL_Code_in_jaar,
-    OPL_Code_actueel,
-    OPL_Academisch_jaar
-  ) %>%
-  distinct()
-
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  left_join(CROHO_per_jaar,
-            by = c(
-              "INS_Inschrijvingsjaar" =
-                "OPL_Academisch_jaar",
-              "OPL_Code_in_jaar"
-            )
-  )
-
+Inschrijvingen_1cho <- Inschrijvingen_1cho_basis %>%
+  distinct() %>%
+  filter(!is.na(INS_Studentnummer))
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ### 2.2 Recoding ####
-
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  distinct() %>%
-  filter(!is.na(INS_Studentnummer)) %>%
-  mutate(
-    INS_Faculteit = stri_trans_general(INS_Faculteit, "Latin-ASCII"),
-    INS_Opleidingsnaam_2002 = stri_trans_general(INS_Opleidingsnaam_2002, "Latin-ASCII")
-  )
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   ## Omzetten naar date zodat we de min en max datum kunnen vinden
@@ -63,11 +32,12 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   )
 
 ## Premaster goed zetten
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mutate(INS_Premaster = recode(INS_Premaster,
-                                "ja" = "P",
-                                "nee" = NA_character_
-  ))
+## TODO
+# Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+#   mutate(INS_Premaster = recode(INS_Premaster,
+#                                 "ja" = "P",
+#                                 "nee" = NA_character_
+#   ))
 
 ## Maak Indicatie variabelen Boolean
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
@@ -93,6 +63,14 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     "INS_Vooropleiding_binnen_HO_code",
     "INS_Vooropleiding_binnen_HO_sector",
     mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_naam"
+  )
+
+Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+  mutate(INS_Hoogste_vooropleiding_code_1CHO = as.numeric(INS_Hoogste_vooropleiding_code_1CHO)) %>%
+  mapping_translate(
+    "INS_Hoogste_vooropleiding_code_1CHO",
+    "INS_Hoogste_vooropleiding_soort_1CHO",
+    mapping_table_name = "Mapping_INS_Vooropleiding_code_INS_Vooropleiding_cat"
   )
 
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
@@ -315,6 +293,6 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 ## BEWAAR & RUIM OP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-write_file_proj(Inschrijvingen_1cho, "INS_Inschrijvingen_1CHO_VUdata_deel_1")
+write_file_proj(Inschrijvingen_1cho, "INS_Inschrijvingen_1CHO_part_1")
 
 clear_script_objects()
