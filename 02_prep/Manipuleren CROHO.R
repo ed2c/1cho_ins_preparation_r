@@ -34,38 +34,15 @@ CROHO <- CROHO %>%
   mutate(Datum_einde_opleiding = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_opleiding)),
          Datum_einde_instroom = as.Date("1899-12-31") + suppressWarnings(days(Datum_einde_instroom)))
 
-if (Sys.getenv("R_CONFIG_ACTIVE") %in% c("synthetic", "default")) {
+# Create synthetic rows based on rows VU
+if (Sys.getenv("R_CONFIG_ACTIVE") %in% c("synthetic", "default", "")) {
 
-  new_rows <- tibble(
-    OPL_Instellingscode = config::get("metadata_institution_BRIN"),
-    OPL_Code_in_jaar = c(50000, 60000, 60001, 60002),
-    OPL_Opleidingsnaam_CROHO = c("B Wizardry", "M Wizardry", "M Wizardry (research)", "M Arithmancy (research)"),
-    Datum_begin_opleiding = as.Date(c("1990-09-01", "1990-09-01", "1990-09-01", "1990-09-01")),
-    Datum_einde_opleiding = as.Date(c("2030-09-01", "2030-09-01", "2030-09-01", "2030-09-01")),
-    Datum_einde_instroom = as.Date(c("2030-09-01", "2030-09-01", "2030-09-01", "2030-09-01")),
-    OPL_Nominale_studielast_EC_aantal = c(180, 60, 120, 120)
-  )
-
-  # Function to calculate the mode (most common element)
-  get_mode <- function(v) {
-    uniqv <- unique(na.omit(v))
-    uniqv[which.max(tabulate(match(v, uniqv)))]
-  }
-
-
-  # Calculate mode for each column grouped by OPL_Nominale_studielast_EC_aantal
-  mode_values <- CROHO %>%
-    group_by(OPL_Nominale_studielast_EC_aantal) %>%
-    summarise(across(.cols = everything(), .fns = get_mode), .groups = "drop") %>%
-    select(-any_of(names(new_rows)), OPL_Nominale_studielast_EC_aantal)
-
-  # Prepare to fill missing values in new_rows based on mode_values
-  new_rows <- new_rows %>%
-    left_join(mode_values, by = "OPL_Nominale_studielast_EC_aantal")
+  synthetic_rows <- CROHO %>%
+    filter(OPL_Instellingscode == "21PL") %>%
+    mutate(OPL_Instellingscode = "21XX")
 
   CROHO <- CROHO %>%
-    bind_rows(new_rows)
-
+    bind_rows(synthetic_rows)
 
 }
 
@@ -81,10 +58,10 @@ CROHO <- CROHO %>%
   ) %>%
   mapping_translate("OPL_Code_in_jaar", "OPL_Code_historisch")
 
-## Helper variabele voor gebruik in volgende stap, zie stijlgids principe F Self-documenting code
+
 nMax_jaar <- config::get("year")
 
-## Het CROHO-bestand bevat alleen rijen per wijziging. Om het paar je maken selecteren we de laatste
+## Het CROHO-bestand bevat alleen rijen per wijziging. Om het per jaar je maken selecteren we de laatste
 ## wijziging per jaar en vervolgens vullen we ontbrekende jaren om met de data van het laatst
 ## ingevulde jaar
 CROHO_per_jaar <- CROHO %>%
