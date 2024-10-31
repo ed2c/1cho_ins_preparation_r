@@ -14,6 +14,12 @@ default:
   data_1cho_enrollments_file_name: "EV299XX24.csv"
   data_1cho_enrollments_file_path: !expr file.path("data/00_raw", year, data_1cho_enrollments_file_name)
 
+  # If you change this add the tables to /metatada/mapping_tables
+  add_faculty: TRUE
+  faculty_mapping_table: "Mapping_faculty_synthetic.csv"
+  add_internal_programme_name: TRUE
+  programme_name_mapping_table: "Mapping_internal_name_synthetic.csv"
+
   # For now removed
 
   # data_1cho_starting_cohorts_rel_file_path: "CEDA_Cohorten_synthetic.zip"

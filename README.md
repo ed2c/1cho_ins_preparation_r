@@ -34,24 +34,25 @@ The goal of this repository is to prepare the data, specifically for visualizati
 
 These variables are made to provide easily insights into the (independent) characteristics of the students (aaansluiting, tussenjaar, profielen, dubbele studie). In turn, these variables help to explain the second group of variables that is made: the target variables around drop-out and study success.
 
-## Secondary (technical) goals
-
-This project is also a demonstration of the usefullness of packages from the [vusaverse](https://github.com/vusaverse/). The vusaverse is a series of packages that provide per package specific functionality. Functions from the vusaverse used in this repository are:
-
--   auditing the data (vvauditor)
-
--   preparation
-
-    -   map values and basic adaptions (vvconverter)
-
-    -   fill missing data (vvfiller)
-
--   dynamic save and load (vvmover)
-
-
 ## Usage
 
 There is a special how_to.qmd file that explains how to use this repository. In addition, the user can run the build.R file
+
+
+## Secondary (technical) goals
+
+This project is also a demonstration of the usefulness of a robust, yet interactive, structure and a complete repo (not just the code, but also the documentation and metadata etc).
+Additionally, the project depends on packages from the [vusaverse](https://github.com/vusaverse/). The vusaverse is a series of packages that provide per package specific functionality. Functions from the vusaverse used in this repository are:
+
+-   auditing the data (vvauditor)
+
+-   map values and basic adaptions (vvconverter)
+
+-   dynamic save and load (vvmover)
+
+-   usage of system variables
+
+Currently many of the functions are still in the
 
 ## TO DO
 
@@ -66,6 +67,7 @@ There is a special how_to.qmd file that explains how to use this repository. In 
 -   [ ] Adapt scripts for CROHO afterwards (still needed for nominal duration)
 -   [ ] Create assets based on user needs and 'assets' from python package
 -   [ ] Create visualisations based on the data (in Shiny?)
+-   [ ] Move renviron variables to config.yml
 
 ## CEDA general checklist
 
