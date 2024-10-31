@@ -6,7 +6,7 @@ Welcome to this CEDA repository. The goal of this repository is to prepare the w
 
 ## Origins and context of data
 
-The well-known 1 CijferHO institution enrollment file is the main data source. Currently a slightly adapted version of this raw data is loaded, this will be changed to output of the [eencijfer package](https://libraries.io/pypi/eencijfer) in the coming months.
+The well-known 1 CijferHO institution enrollment file is the main data source. The input for this repository is the output of the [eencijfer package](https://libraries.io/pypi/eencijfer).
 
 This file is register data for each public educational institution that provides higher education, i.e. (applied) universities. The data provider is DUO and the file is accompanied by a lot of supporting documents (see /metadata/data_dictionary_start) explaining the variables. In addition, [DUO has a page for it with contact details](https://duo.nl/zakelijk/hoger-onderwijs/studentenadministratie/bron-controleren/deelnames-en-resultaten-duo-registers.jsp). Finally, UNL and VH are in close contact with DUO and the ministry and have also expertise on the matter/
 
@@ -19,13 +19,15 @@ The goal of this repository is to prepare the data, specifically for visualizati
     -   Year of study (Student in programme)
     -   Drop-out first year before 1 February
     -   Number of enrollments at institution in given year (dubbele studie)
-    -   High school tracks (VWO-profielen)
+    -   High school tracks (so called "profielen")
     -   Gap years (Tussenjaren)
     -   Inflow (Aansluiting)
 
-2.  Raw data from the 1CijferHO 'EOI-Cohort' file, a file derived from the original 1CijferHO institution file, is also used. It contains definitiona about degrees and dropout. These are also transformed to categorical variables with easy to interpret values. In addition a few derived variables are added.
+2.  Thereafter, it is enriched with programme data from CROHO. CROHO provides the number of EC of a programme and thus the nominal duration. This used to created derived statistics about students' progress.
 
-3.  Thirdly, it is enriched with programme data from CROHO. This is used to ensure correct integration of the enrollments with the cohort data. In addition, CROHO provides the number of EC of a programme and thus the nominal duration. This used to created derived statistics about students' progress.
+3.  Consequently, the data is enriched with characteristics regarding 'nominal' success and drop-out.
+
+These variables are made to provide easily insights into the (independent) characteristics of the students (aaansluiting, tussenjaar, profielen, dubbele studie). In turn, these variables help to explain the second group of variables that is made: the target variables around drop-out and study success.
 
 ## Secondary goals
 
@@ -39,11 +41,8 @@ This project is also a demonstration of the usefullness of packages from the [vu
 
     -   fill missing data (vvfiller)
 
--   transpose and aggregate (vvscultpor)
-
 -   dynamic save and load (vvmover)
 
-Currently, much is still in the overall vusa package, this will be more modular in the coming months.
 
 ## Usage
 
@@ -57,9 +56,8 @@ As service to the user, we want to provide a results folder with only the final 
 
 ## TO DO
 
--   [ ] Finish checklist (see below), with the exception of content-dependent validations
--   [ ] Use output from the [eencijfer package](https://libraries.io/pypi/eencijfer) as 'raw' data
--   [ ] Make results folder
+-   [ ] Finish CEDA checklist (see below), with the exception of content-dependent validations
+-   [ ] Improve folder structure
 
 ## CEDA general checklist
 
