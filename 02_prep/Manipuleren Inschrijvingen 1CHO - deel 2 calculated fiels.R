@@ -10,10 +10,9 @@
 ## 1. INLEZEN ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata_deel_1",
+Inschrijvingen_1cho_basis <- read_file_proj("INS_Inschrijvingen_1CHO_part_1",
                                       dir = "02_prepared"
                                       )
-
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. BEWERKEN ####
@@ -22,31 +21,10 @@ Inschrijvingen_1cho <- read_file_proj("INS_Inschrijvingen_1CHO_VUdata_deel_1",
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ### 2.1 Direct af te leiden ####
 
-## Voeg de variabele BPM toe om aan te geven of de
-## student bachelor-, premaster- of masterstudent is.
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  mutate(
-    INS_Opleidingsfase_BPM = if_else(is.na(INS_Premaster),
-                                     INS_Opleidingsfase_actueel_code,
-                                     INS_Premaster)
-  )
-
-##' *INFO* Onderstaande uitgecomment, omdat dit afwijking van standaard definitie is
-# Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-#   mutate(
-#     ## De definitie voor verblijfsjaren wordt aangepast,
-#     ## omdat het logischer is om vanaf 0 te tellen
-#     INS_Verblijfsjaren_wetenschappelijk_onderwijs =
-#       INS_Verblijfsjaren_wetenschappelijk_onderwijs - 1,
-#     INS_Verblijfsjaren_hoger_onderwijs =
-#       INS_Verblijfsjaren_hoger_onderwijs - 1
-#   )
-
-
 ## Bepaal ahv INS_Postcode_student_1okt_peildatum en INS_Postcode_student_voor_HO of een student
 ## uitwonend is: als de velden gelijk zijn voor een student is deze thuiswonend, als ze verschillend
 ## zijn uitwonend
-Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
+Inschrijvingen_1cho <- Inschrijvingen_1cho_basis %>%
   mutate(INS_Uitwonend = if_else(INS_Postcode_student_1okt_peildatum == INS_Postcode_student_voor_HO,
                                  FALSE,
                                  TRUE
@@ -63,7 +41,7 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
   group_by(INS_Studentnummer, INS_Inschrijvingsjaar, INS_Datum_inschrijving, INS_Datum_uitschrijving) %>%
   mutate(
-    INS_Aantal_inschrijvingen_jaar_instelling = length(unique(OPL_Code_actueel)),
+    INS_Aantal_inschrijvingen_jaar_instelling = length(unique(OPL_code_historisch)),
     INS_Aantal_EOI_inschrijvingen_jaar_instelling = sum(
       INS_Indicatie_eerste_jaars_opleiding_en_instelling == 1
     )
@@ -184,18 +162,16 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 
 ## TODO logic aanpassen
 Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
-  ## Huidige INS_Inschrijvingsjaar_EOI opslaan onder de naam SAP
-  mutate(INS_Inschrijvingsjaar_EOI_SAP = INS_Inschrijvingsjaar_EOI) %>%
   ## Studiejaar wordt per student-opleiding combinatie berekend
   group_by(
     INS_Studentnummer,
-    OPL_Code_actueel
+    OPL_code_historisch
   ) %>%
   # Sorteer het bestand op inschrijvingsjaar zodat het studiejaar bepaald
   # kan worden
   arrange(
     INS_Studentnummer,
-    OPL_Code_actueel,
+    OPL_code_historisch,
     INS_Inschrijvingsjaar
   ) %>%
   mutate(
@@ -206,11 +182,7 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     ## Maak een boolean variabele aan om aan te geven of het
     ## inschrijvingsjaar het EOI-jaar is
     INS_Inschrijvingsjaar_is_EOI =
-      INS_Inschrijvingsjaar == INS_Eerste_jaar_opleiding_en_instelling,
-    # TODO Waar komt INS INschrijvingsjaar_EOI dan vandaan?
-    INS_Inschrijvingsjaar_EOI = INS_Eerste_jaar_opleiding_en_instelling
-    # INS_Tussenjaren_binnen_opleiding =
-    #   max(INS_Inschrijvingsjaar) - min(INS_Inschrijvingsjaar) - (max(INS_Studiejaar)) + 1
+      INS_Inschrijvingsjaar == INS_Inschrijvingsjaar_EOI
   ) %>%
   ungroup()
 
@@ -224,12 +196,12 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     ## Bepaal of deze uitschrijving een EOI was. Alleen in dit geval wordt
     ## de BSA ontlopen
     INS_Uitschrijving_voor_1_feb_EOI =
-      INS_Eerste_jaar_opleiding_en_instelling ==
+      INS_Inschrijvingsjaar_EOI ==
       INS_Inschrijvingsjaar &
       INS_Uitschrijving_voor_1_feb
   ) %>%
   ## Groepeer per student/opleiding
-  group_by(INS_Studentnummer, OPL_Code_actueel) %>%
+  group_by(INS_Studentnummer, OPL_code_historisch) %>%
   mutate(
     INS_Herinschrijving_jaar_2_na_uitschrijving_voor_1_feb =
       case_when(
@@ -266,19 +238,19 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     ## tussenjaar voor hun eerste jaar in het hoger onderwijs
     INS_Indicatie_Tussenjaar_voor_B = (
       INS_Hoogste_vooropleiding_jaar_1CHO + 1 < INS_Inschrijvingsjaar_EOI &
-        INS_Opleidingsfase_BPM == "B" &
+        OPL_Fase == "B" &
         INS_Verblijfsjaren_wetenschappelijk_onderwijs == 1 &
         INS_Verblijfsjaren_hoger_onderwijs == 1),
     ## Maak variabele INS_Indicatie_Tussenjaar_voor_P voor studenten met één of meer
     ## tussenjaren tussen hun bachelor en hun premaster
     INS_Indicatie_Tussenjaar_voor_P = (
       INS_Hoogste_vooropleiding_jaar_1CHO + 1 < INS_Inschrijvingsjaar_EOI &
-        INS_Opleidingsfase_actueel_code == "P" &
+        OPL_Fase == "S" &
         # De student is nog niet begonnen met de premasterfase in dit jaar
         INS_Verblijfsjaar_type_onderwijs_binnen_HO <= 1),
     INS_Indicatie_Tussenjaar_voor_M = (
       INS_Hoogste_vooropleiding_jaar_1CHO + 1 < INS_Inschrijvingsjaar_EOI &
-        INS_Opleidingsfase_actueel_code == "M" &
+        OPL_Fase == "M" &
         # De student heeft niet eerder een M gedaan
         INS_Verblijfsjaar_type_onderwijs_binnen_HO <= 1
     )
@@ -286,7 +258,7 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
 
 ## We generaliseren de variabelen voor alle inschrijvingen van de student in de opleiding
 Inschrijvingen_1cho <- Inschrijvingen_1cho  %>%
-  group_by(INS_Studentnummer, OPL_Code_actueel) %>%
+  group_by(INS_Studentnummer, OPL_code_historisch) %>%
   mutate(
     INS_Indicatie_Tussenjaar_voor_B = INS_Indicatie_Tussenjaar_voor_B[first(which(INS_Studiejaar == 1))],
     INS_Indicatie_Tussenjaar_voor_P = INS_Indicatie_Tussenjaar_voor_P[first(which(INS_Studiejaar == 1))],
@@ -308,8 +280,8 @@ Inschrijvingen_1cho <- Inschrijvingen_1cho %>%
     INS_Aansluiting =
       case_when(
         INS_Direct &
-          INS_Hoogste_vooropleiding_BRIN_1CHO == "21PL" ~
-          "Direct na diploma VU",
+          INS_Hoogste_vooropleiding_BRIN_1CHO == config::get("metadata_institution_BRIN") ~
+          "Direct na diploma instelling",
         INS_Direct ~ "Direct na diploma extern",
         INS_Indicatie_Tussenjaar == TRUE ~ "Tussenjaar",
         #SUC_Instroom_switch_VU == TRUE ~ "Switch binnen VU",
