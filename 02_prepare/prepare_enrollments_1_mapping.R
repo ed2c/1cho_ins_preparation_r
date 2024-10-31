@@ -33,14 +33,6 @@ enrollments <- enrollments %>%
     INS_Datum_uitschrijving = as.Date(INS_Datum_uitschrijving, format = "%d/%m/%Y", tryFormats = c("%d/%m/%Y", "%d-%m-%Y")),
   )
 
-## Premaster goed zetten
-## TODO
-# enrollments <- enrollments %>%
-#   mutate(INS_Premaster = recode(INS_Premaster,
-#                                 "ja" = "P",
-#                                 "nee" = NA_character_
-#   ))
-
 ## Maak Indicatie variabelen Boolean
 enrollments <- enrollments %>%
   ## Maak de Indicatie variabelen met "J" en  "N" tot boolean variabelen
