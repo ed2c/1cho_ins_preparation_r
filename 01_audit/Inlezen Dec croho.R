@@ -37,6 +37,18 @@ Dec_Croho <- read_fwf(Bestandspad,
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## Bestandsbeschrijving_Croho.txt bevat uitleg voor de inhoud van de kolommen
 
+# Create synthetic rows based on rows VU
+if (Sys.getenv("R_CONFIG_ACTIVE") %in% c("synthetic", "default", "")) {
+
+  synthetic_rows <- Dec_Croho %>%
+    filter(X3 == "21PL") %>%
+    mutate(X3 = "21XX")
+
+  Dec_Croho <- Dec_Croho %>%
+    bind_rows(synthetic_rows)
+
+}
+
 Dec_Croho <- Dec_Croho %>%
   ## Filter op instelling omdat historische codes anders over instellingen heen kunnen verschillen
   filter(X3 == config::get("metadata_institution_BRIN")) %>%
