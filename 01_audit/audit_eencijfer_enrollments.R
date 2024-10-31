@@ -28,12 +28,6 @@ eencijfer_naming <- read_documentation("Documentatie_eencijfer_enrollments_packa
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-# TODO test code
-#
-# test <- create_documentatie(eencijfer_enrollments, "Documentatie_eencijfer_enrollments.csv")
-#
-# write_csv2(test, "metadata/assertions/Documentatie_eencijfer_enrollments.csv")
-
 eencijfer_enrollments <- wrapper_translate_colnames_documentation(
   eencijfer_enrollments,
   eencijfer_naming
