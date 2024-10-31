@@ -66,6 +66,8 @@ Currently many of the functions are still in the
 -   [ ] Move the loading of the decoding files to the python package
 -   [ ] Adapt scripts for CROHO afterwards (still needed for nominal duration)
 -   [ ] Create assets based on user needs and 'assets' from python package
+-   [ ] Give assets a n <= 5 option
+-   [ ] Discuss cohorts with UNL
 -   [ ] Create visualisations based on the data (in Shiny?)
 -   [ ] Move renviron variables to config.yml
 
