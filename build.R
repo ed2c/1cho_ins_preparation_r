@@ -6,6 +6,8 @@
 ##' *INFO*:
 ## 1) This file runs all scripts to build all datasets.
 
+source("utils/00_set_up_environment.R")
+
 sFolders <- write_config_proj() %>%
   pull(script_dir)
 
