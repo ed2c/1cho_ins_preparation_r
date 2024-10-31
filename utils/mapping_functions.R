@@ -174,7 +174,7 @@ mapping_translate2 <- function(df, current1, current2, new, mapping_table_name =
   return(df)
 }
 
-
+## TODO Function is needlessly complex
 maptbl_config2suffix <- function(config_settings, mapping_table_name = "Mapping_config") {
 
   ## prepare for mapping_table_n
