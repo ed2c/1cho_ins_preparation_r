@@ -3,5 +3,6 @@
 !*synthetic.zip
 !*synthetic.csv
 !*synthetic.rds
+!*.asc
 # Except
 !.gitignore
