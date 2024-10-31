@@ -13,21 +13,7 @@
 ## basis van herinschrijvings -en examengegevens uit het Cohortenbestand
 ## (waaronder doorstroom en succes binnen en buiten de VU). Bovendien worden
 ## enkele Inschrijvings variabelen bepaald: Onderwijsherkomst Soort_eerstejaars.
-## Het cohortenbestand kan daarna direct aan de analyseset gekoppeld worden.
 ##
-##
-## Opmerkingen:
-## 1) Gebruik de Confluence documentatie van het 1cHO-Cohortenbestand om dit script te
-## begrijpen.
-## 2) Twee succesvariabelen (uitval opleiding,
-## diplomarendement herinschrijvers) worden op 2 plaatsen bepaald, nl.
-## Manipulatie Inschrijvingen.R en Manipulatie Cohorten.R.
-## Vergelijk de 2 sets succesvariabelen met script
-## 20.Test/Test_succesvariabelen_inschrijvingen_cohorten.R.
-## 3) In voorjaar: gebruik oorspronkelijk 1cHO-Cohortenbestand.
-## In najaar: gebruik schattingen-cohortenbestand.
-## 4) In voorjaar: gebruik INS_Inschrijvingen_voorjaar.rds.
-## In najaar: gebruik INS_Inschrijvingen_najaar.rds
 ##
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -49,26 +35,6 @@ CROHO_per_jaar <- read_file_proj("CROHO_per_jaar",
 
 Cohorten <- Cohorten %>%
   filter(INS_Eerste_jaar_opleiding_en_instelling >= config::get("first_year"))
-
-## Bepaal voor 8 jaar de volgende nieuwe succesvariabelen, gebruik makend van
-## INS_Herinschrijving -en INS_Examen-velden:
-## - Uitval bij opleiding
-## - Uitval uit instelling
-## - Uitval uit HO - NIEUW
-## - Switch binnen instelling
-## - Switch binnen WO - NIEUW
-## - Switch binnen HBO - NIEUW
-## - Diplomarendement van herinschrijvers na jaar 1 (voor 9 jaar)
-## - Diplomarendement oorspronkelijk cohort (voor 9 jaar)
-## Bovendien samenvatting van bovenstaande succesvariabelen, uitgedrukt in:
-## - SUC_Diploma_herinschrijvers_aantal_jaar_cohorten
-## - SUC_Diploma_aantal_jaar_cohorten
-## - SUC_Uitval_aantal_jaar_cohorten
-## - SUC_Switch_binnen_vu_aantal_jaar_cohorten
-## - SUC_Uitval_vu_aantal_jaar_cohorten
-## - SUC_Uitval_HO_aantal_jaar_cohorten
-## - SUC_Switch_WO_aantal_jaar_cohorten
-## - SUC_Switch_HBO_aantal_jaar_cohorten
 
 ## Zet per student-cohortjaar-opleidingscode de variabelen
 ## INS_Examen_na_XX_jaar en INS_Herinschrijving_na_XX_jaar in rijen onder elkaar
@@ -130,125 +96,105 @@ Cohorten_succes <- Cohorten %>%
   ## Bepaal de verschillende successvariabelen
   ## Hierbij is de betekenis van waarden voor INS_Examen (zie documentatie
   ## 1cHO-Cohortbestand, met beslisboom):
-  ##      Ba (I) cohort	                    Ma (V) cohort
-  ## a	Equi-opl nieuwe stelsel (Ba)	    equi-opl nieuwe stelsel (Ma)
-  ## b	Equi-opl oude stelsel (Doc)	        equi-opl oude stelsel (Pdoc)
-  ## c	hoop/instelling (Ba)	            hoop/instelling (Ma)
-  ## d	hoop/instelling (Doc)	            hoop/instelling (PDoc)
-  ## e	instelling (Ba)	                    instelling (Ma)
-  ## f	instelling (Doc)	                instelling (PDoc)
-  ## g	hoop/srt_HO (Ba)	                hoop/srt_HO (Ma)
-  ## h	hoop/srt_HO (Doc)	                hoop/srt_HO (Pdoc)
-  ## i	Srt_HO (Ba)	                        srt_HO (Ma)
-  ## j	Srt_HO (Doc)	                    srt_HO (Pdoc)
-  ## k	niet srt_HO	                        niet srt_HO
-  ## l	master behaald zelfde instelling
-  ## p	master behaald andere instelling
-  ## q (alleen bij schattingen)               bachelor behaald zelfde instelling
   ## Uitval bij opleiding
   mutate(
+    SUC_Type_uitstroom_cohorten =
+      case_when(
+        # First check if we can determine the status
+        is.na(INS_Examen) ~ NA_character_,
+        # Diploma gets highest priority - successful completion
+        INS_Examen %in% c("a", "b") ~ "Diploma",
+        # Then check various types of switches and dropouts
+        # Order matters: from most specific to most general
+        # Switches within same institution
+        !(INS_Examen %in% c("a", "b")) &
+          INS_Herinschrijving %in% c("2", "3", "4", "5") ~ "Switch binnen instelling",
+        #'*INFO* Hoe gaat dit bij HBO instelling (nu hebben die dit bestand nog niet)
+        # Switch to other university
+        !(INS_Examen %in% c("a", "b")) &
+          INS_Herinschrijving %in% c("6", "7", "9", "10") ~ "Switch naar WO",
+        # Switch to HBO
+        !(INS_Examen %in% c("a", "b")) &
+          INS_Herinschrijving %in% c("8", "11") ~ "Switch naar HBO",
+        # Complete dropout from higher education
+        !(INS_Examen %in% c("a", "b")) &
+          INS_Herinschrijving %in% c("12", "13") ~ "Uitval HO",
+        .default = "Onbekend"
+      ),
     SUC_Uitval =
       case_when(
         ## Als de Examen-variabele leeg is, is de student nog aan het
         ## studeren. De variabele kan dus ook niet bepaald worden.
-        is.na(INS_Examen) ~
-          NA,
+        is.na(INS_Examen) ~ NA,
         ## Er is sprake van uitval bij opleiding als student diploma
-        ## voor EOI-opleiding niet heeft gehaald (INS_Examen) en zich
-        ## daarna niet herinschrijft voor dezelfde opleiding
-        ## (INS_Herinschrijving).
+        ## voor EOI-opleiding niet heeft gehaald
         !(INS_Examen %in% c("a", "b")) &
+          ## en zich daarna niet herinschrijft voor dezelfde opleiding
           INS_Herinschrijving != 1 ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van uitval
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
-  ## Uitval VU
+  ## Uitval instelling
   mutate(
-    SUC_Uitval_vu =
+    SUC_Uitval_instelling =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
-        is.na(INS_Examen) ~
-          NA,
-        ## Er is sprake van uitval vu als student diploma
-        ## voor EOI-opleiding niet heeft gehaald (INS_Examen) en zich
-        ## daarna niet herinschrijft bij vu (INS_Herinschrijving).
+        is.na(INS_Examen) ~ NA,
         !(INS_Examen %in% c("a", "b")) &
+        ## Als student zich daarna niet herinschrijft bij instelling
           INS_Herinschrijving %in% c("6", "7", "8", "9", "10", "11", "12", "13") ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van uitval
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
   ## Uitval uit HO
   mutate(
     SUC_Uitval_HO =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
-        is.na(INS_Examen) ~
-          NA,
-        ## Er is sprake van uitval uit HO als student diploma
-        ## voor EOI-opleiding niet heeft gehaald (INS_Examen) en zich
-        ## daarna niet herinschrijft in HO (INS_Herinschrijving)
+        is.na(INS_Examen) ~ NA,
         !(INS_Examen %in% c("a", "b")) &
+          ## en zich daarna niet herinschrijft in HO
           INS_Herinschrijving %in% c("12", "13") ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van uitval
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
   ## Switch binnen instelling
   mutate(
-    SUC_Switch_binnen_vu =
+    SUC_Switch_binnen_instelling =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
         is.na(INS_Examen) ~ NA,
-        ## Er is sprake van switch binnen vu als student diploma
-        ## voor EOI-opleiding niet heeft gehaald (INS_Examen) en zich
-        ## daarna herinschrijft voor andere opleiding binnen vu
-        ## (opleidng binnen gelijke, lagere of hogere fase)
-        ## (INS_Herinschrijving).
         !(INS_Examen %in% c("a", "b")) &
+          ## zich ## daarna herinschrijft voor andere opleiding binnen vu
+          ## (opleidng binnen gelijke, lagere of hogere fase)
           INS_Herinschrijving %in% c("2", "3", "4", "5") ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van switch
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
   ## Switch binnen WO
   mutate(
-    SUC_Switch_WO =
+    SUC_Switch_naar_WO =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
         is.na(INS_Examen) ~ NA,
-        ## Er is sprake van switch binnen wo als student diploma
-        ## voor EOI-opleiding niet heeft gehaald (INS_Examen) en zich
-        ## daarna herinschrijft voor opleiding bij andere universiteit
+        !(INS_Examen %in% c("a", "b")) &
+        ## als student daarna herinschrijft voor opleiding bij andere universiteit
         ## (opleidng binnen gelijke, lagere of hogere fase)
         ## (INS_Herinschrijving).
-        !(INS_Examen %in% c("a", "b")) &
           INS_Herinschrijving %in% c("6", "7", "9", "10") ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van switch
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
-  ## Switch binnen HBO
+  ## Switch naar HBO
   mutate(
-    SUC_Switch_HBO =
+    SUC_Switch_naar_HBO =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
         is.na(INS_Examen) ~ NA,
         ## Er is sprake van switch naar hbo als student diploma
         ## voor EOI-opleiding niet heeft gehaald (INS_Examen) en zich
@@ -268,8 +214,6 @@ Cohorten_succes <- Cohorten %>%
   mutate(
     SUC_Diploma_herinschrijvers =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
         is.na(INS_Examen) ~ NA,
         ## Er is sprake van diploma herinschrijving als student zich
         ## na 1 jaar herinschrijft voor dezelfde opleiding
@@ -279,24 +223,20 @@ Cohorten_succes <- Cohorten %>%
           INS_Herinschrijving_na_1_jaar_vastgezet == 1 ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van diploma herinschrijvers
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
   ## Diplomarendement oorspronkelijk cohort
   mutate(
     SUC_Diploma =
       case_when(
-        ## Als de Examen-variabele leeg is, is de student nog aan het
-        ## studeren. De variabele kan dus ook niet bepaald worden.
         is.na(INS_Examen) ~ NA,
         ## Er is sprake van diploma als student diploma
         ## voor EOI-opleiding heeft gehaald (INS_Examen).
         INS_Examen %in% c("a", "b") ~
           TRUE,
         ## In alle andere gevallen is er geen sprake van diploma
-        TRUE ~
-          FALSE
+        .default = FALSE
       )
   ) %>%
   ## Verwijder de velden die niet meer nodig zijn
@@ -350,12 +290,12 @@ Cohorten_succes_samenvatting <- Cohorten_succes %>%
     value,
     SUC_Diploma_aantal_jaar_cohorten,
     SUC_Diploma_herinschrijvers_aantal_jaar_cohorten,
-    SUC_Switch_binnen_vu_aantal_jaar_cohorten,
-    SUC_Switch_HBO_aantal_jaar_cohorten,
-    SUC_Switch_WO_aantal_jaar_cohorten,
+    SUC_Switch_binnen_instelling_aantal_jaar_cohorten,
+    SUC_Switch_naar_HBO_aantal_jaar_cohorten,
+    SUC_Switch_naar_WO_aantal_jaar_cohorten,
     SUC_Uitval_aantal_jaar_cohorten,
     SUC_Uitval_HO_aantal_jaar_cohorten,
-    SUC_Uitval_vu_aantal_jaar_cohorten,
+    SUC_Uitval_instelling_aantal_jaar_cohorten,
     -INS_Studentnummer,
     -OPL_Code_in_jaar,
     -INS_Eerste_jaar_opleiding_en_instelling
@@ -373,15 +313,17 @@ Cohorten_succes_samenvatting <- Cohorten_succes %>%
       SUC_Diploma_herinschrijvers_aantal_jaar_cohorten,
       SUC_Diploma_aantal_jaar_cohorten,
       SUC_Uitval_aantal_jaar_cohorten,
-      SUC_Switch_binnen_vu_aantal_jaar_cohorten,
-      SUC_Uitval_vu_aantal_jaar_cohorten,
+      SUC_Switch_binnen_instelling_aantal_jaar_cohorten,
+      SUC_Uitval_instelling_aantal_jaar_cohorten,
       SUC_Uitval_HO_aantal_jaar_cohorten,
-      SUC_Switch_WO_aantal_jaar_cohorten,
-      SUC_Switch_HBO_aantal_jaar_cohorten
+      SUC_Switch_naar_WO_aantal_jaar_cohorten,
+      SUC_Switch_naar_HBO_aantal_jaar_cohorten
     ),
     # De functie is as.numeric.
     as.numeric
   )
+
+test <- Cohorten_succes %>%
 
 ## Ga verder met tabel Cohorten_succes: zodanig bewerken naar brede tabel zodat
 ## tabel aan Cohorten gekoppeld kan worden.
@@ -402,46 +344,6 @@ Cohorten_succes <- Cohorten_succes %>%
   spread(
     key = key,
     value = value
-  )
-
-## Koppel de succes-tabel aan Cohorten
-Cohorten <- Cohorten %>%
-  left_join(Cohorten_succes, by = c(
-           "INS_Studentnummer",
-           "OPL_Code_in_jaar",
-           "INS_Eerste_jaar_opleiding_en_instelling"),
-            suffix = c("", ".y")) %>%
-  select(-ends_with(".y")) %>%
-  ## Bepaal de variabele: SUC_Diploma_herinschrijvers_binnen_9_jaar_cohorten.
-  ## Variabele kon niet in voorgaande stap bepaald worden (omgeklapte tabel)
-  ## omdat er geen veld bestaat voor INS_Herinschrijving_na_9_jaar.
-  ## Daarom hier apart bepalen.
-  mutate(
-    SUC_Diploma_herinschrijvers_binnen_9_jaar_cohorten =
-      case_when(
-        is.na(INS_Examen_na_9_jaar) ~
-          NA,
-        INS_Examen_na_9_jaar %in% c("a", "b") &
-          INS_Herinschrijving_na_1_jaar == 1 ~
-          TRUE,
-        TRUE ~
-          FALSE
-      )
-  ) %>%
-  ## Bepaal de variabele: SUC_Diploma_binnen_9_jaar_cohorten.
-  ## Variabele kon niet in voorgaande stap bepaald worden (omgeklapte tabel)
-  ## omdat er geen veld bestaat voor INS_Herinschrijving_na_9_jaar.
-  ## Daarom hier apart bepalen.
-  mutate(
-    SUC_Diploma_binnen_9_jaar_cohorten =
-      case_when(
-        is.na(INS_Examen_na_9_jaar) ~
-          NA,
-        INS_Examen_na_9_jaar %in% c("a", "b") ~
-          TRUE,
-        TRUE ~
-          FALSE
-      )
   )
 
 
@@ -472,27 +374,6 @@ Cohorten <- Cohorten %>%
       "INS_Eerste_jaar_opleiding_en_instelling"
     ), suffix = c("", ".y")) %>%
   select(-ends_with(".y")) %>%
-  ## Correctie variabele omdat voor jaar 9 de variabele is bepaald nadat
-  ## Cohorten_samenvatting is samengesteld.
-  ## SUC_Diploma_aantal_jaar_cohorten
-  mutate(
-    SUC_Diploma_aantal_jaar_cohorten =
-      if_else(is.na(SUC_Diploma_aantal_jaar_cohorten) &
-        SUC_Diploma_binnen_9_jaar_cohorten == TRUE,
-      9,
-        SUC_Diploma_aantal_jaar_cohorten
-      )
-  ) %>%
-  ## Correctie variabele omdat voor jaar 9 de variabele is bepaald nadat
-  ## Cohorten_samenvatting is samengesteld.
-  mutate(
-    SUC_Diploma_herinschrijvers_aantal_jaar_cohorten =
-      if_else(is.na(SUC_Diploma_herinschrijvers_aantal_jaar_cohorten) &
-        SUC_Diploma_herinschrijvers_binnen_9_jaar_cohorten == TRUE,
-      9,
-        SUC_Diploma_herinschrijvers_aantal_jaar_cohorten
-      )
-  ) %>%
   ## Wijzig SUC_Diploma_aantal_jaar_cohorten naar een integer
   mutate(SUC_Diploma_aantal_jaar_cohorten = as.integer(SUC_Diploma_aantal_jaar_cohorten))
 
@@ -517,394 +398,6 @@ assert_no_duplicates_in_group(Cohorten, c(
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 3.SUCCESVARIABELEN, NOMINALE STUDIEDUUR ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-## Bepaal nieuwe succesvariabelen tbv tableau, mbv nominale studieduur:
-## - SUC_Diploma_cohorten (mogelijke waarden: TRUE, FALSE of NA)
-## - SUC_Diploma_herinschrijvers_binnen_1_tm_9_jaar_cohorten (tbv Tableau)
-## - SUC_Uitval_na_jaar_1_tm_8_cohorten (tbv Tableau)
-## - SUC_Diploma_nominaal_cohorten
-## - SUC_Diploma_nominaal_plus1_cohorten
-## - SUC_Diploma_nominaal_plus2_cohorten
-## - SUC_Diploma_nominaal_plus3_cohorten
-## - SUC_Diploma_nominaal_plus4_cohorten
-## - SUC_Diploma_nominaal_plus5_cohorten
-## - SUC_Diploma_nominaal_plus1_tm_9_cohorten (tbv Tableau)
-## - SUC_Doorstroom_van_bachelor_naar_master_vu_elders_cohorten
-
-## Selecteer per studiejaar, per opleiding de nominale studieduur
-CROHO_per_jaar <- CROHO_per_jaar %>%
-  select(
-    OPL_Opleidingsnaam_CROHO_actueel,
-    OPL_Code_in_jaar,
-    OPL_Code_actueel,
-    OPL_Nominale_studieduur,
-    OPL_Academisch_jaar
-  ) %>%
-  ## Verwijder dubbele waarden (die onstaan door opleidingsvorm (voltijd en deeltijd))
-  distinct()
-
-## Koppel de nominale studeduur aan Cohorten
-Cohorten <- Cohorten %>%
-  mapping_translate(current = "OPL_Code_in_jaar", new = "OPL_Naam_in_jaar")
-
-Cohorten <- Cohorten %>%
-  left_join(CROHO_per_jaar,
-            by = c(
-              "INS_Eerste_jaar_opleiding_en_instelling" =
-                "OPL_Academisch_jaar",
-              "OPL_Code_in_jaar"
-            )
-  )
-
-
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-## Controleer of er duplicaten zijn ontstaan
-assert_no_duplicates_in_group(Cohorten, c(
-  "INS_Studentnummer",
-  "INS_Eerste_jaar_opleiding_en_instelling",
-  "OPL_Code_in_jaar"
-))
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-## Bepaal nieuwe succesvariabelen
-Cohorten <- Cohorten %>%
-  ## Bepaal nieuwe variabele SUC_Diploma_cohorten: geeft aan of diploma voor
-  ## EOI-opleiding wordt behaald (mogelijke waarden: TRUE, FALSE of NA).
-  mutate(
-    SUC_Diploma_cohorten =
-      case_when(!is.na(SUC_Diploma_aantal_jaar_cohorten) ~ TRUE)
-  ) %>%
-  ## Bepaal variabele SUC_Diploma_herinschrijvers_binnen_1_tm_9_jaar_cohorten:
-  ## Variabele geeft, als herinschrijver diploma voor eoi-opleiding heeft
-  ## behaald, in woorden aan na hoeveel jaar diploma is behaald. Tbv Tableau.
-  mutate(
-    SUC_Diploma_herinschrijvers_binnen_1_tm_9_jaar_cohorten =
-      case_when(
-        !is.na(SUC_Diploma_herinschrijvers_aantal_jaar_cohorten) ~
-          paste("Diploma jaar",
-            SUC_Diploma_herinschrijvers_aantal_jaar_cohorten,
-            "herinschrijvers",
-            sep = " "
-          ),
-        TRUE ~
-          "(Nog) geen diploma herinschrijvers"
-      )
-  ) %>%
-  ## Bepaling nieuwe variabele: SUC_Uitval_na_jaar_1_tm_8_cohorten. Variabele
-  ## geeft, als er uitval bij opleiding is, in woorden aan na hoeveel jaar
-  ## deze uitval plaatsvindt. Tbv Tableau.
-  mutate(
-    SUC_Uitval_na_jaar_1_tm_8_cohorten =
-      case_when(
-        !is.na(SUC_Uitval_aantal_jaar_cohorten) ~
-          paste("Uitval jaar",
-            SUC_Uitval_aantal_jaar_cohorten,
-            sep = " "
-          ),
-        TRUE ~
-          "Geen uitval"
-      )
-  ) %>%
-  ## Bepaling nieuwe variabele: SUC_Diploma_nominaal_plus1_tm_9_cohorten.
-  ## Tbv Tableau. Ten eerste bepaal verschil in jaren tussen aantal jaren nodig
-  ## voor diploma en nominale studieduur.
-  mutate(
-    SUC_Diploma_verschil_nominaal_aantal_jaar =
-      SUC_Diploma_aantal_jaar_cohorten - OPL_Nominale_studieduur
-  ) %>%
-  mutate(
-    SUC_Diploma_nominaal_plus1_tm_9_cohorten =
-      case_when(
-        SUC_Diploma_verschil_nominaal_aantal_jaar < 0 ~
-          paste0("Nominaal ", SUC_Diploma_verschil_nominaal_aantal_jaar),
-        SUC_Diploma_verschil_nominaal_aantal_jaar == 0 ~ "Nominaal",
-        SUC_Diploma_verschil_nominaal_aantal_jaar > 0 ~
-          paste0("Nominaal +", SUC_Diploma_verschil_nominaal_aantal_jaar),
-        is.na(SUC_Diploma_aantal_jaar_cohorten) ~
-          "(Nog) geen diploma",
-        # Alle andere gevallen, o.a. als OPL_Nominale_studieduur onbekend is.
-        TRUE ~
-          as.character(SUC_Diploma_aantal_jaar_cohorten)
-      )
-  ) %>%
-  select(-SUC_Diploma_verschil_nominaal_aantal_jaar)
-
-## Definieer de functie Bepaal_Nominaalplus waarmee 6 nieuwe variabelen voor
-## SUC_Diploma in combinatie met nominale studieduur worden bepaald.
-## Deze variabelen worden in oude rapporten gebruikt.
-Bepaal_Nominaalplus <- function(df, plus) {
-  ## Plus geeft aantal jaar boven nominaal weer (nominaal_plus).
-  ## Plus heeft waarde tussen 0 en 5.
-  df <- df %>%
-    ## Bepaal som van Nominale studieduur en plus
-    mutate(som = OPL_Nominale_studieduur + plus) %>%
-    ## Bepaal nieuwe variabele: SUC_Diploma_nominaal_plus
-    mutate(
-      SUC_Diploma_nominaal_plus =
-        case_when(
-          som == 1 ~
-            SUC_Diploma_binnen_1_jaar_cohorten,
-          som == 2 ~
-            SUC_Diploma_binnen_2_jaar_cohorten,
-          som == 3 ~
-            SUC_Diploma_binnen_3_jaar_cohorten,
-          som == 4 ~
-            SUC_Diploma_binnen_4_jaar_cohorten,
-          som == 5 ~
-            SUC_Diploma_binnen_5_jaar_cohorten,
-          som == 6 ~
-            SUC_Diploma_binnen_6_jaar_cohorten,
-          som == 7 ~
-            SUC_Diploma_binnen_7_jaar_cohorten,
-          TRUE ~
-            NA
-        )
-    ) %>%
-    ## Hernoem SUC_Diploma_nominaal_plus: Voeg "plus" (of aantal jaar boven nominaal) toe
-    rename_at(vars(SUC_Diploma_nominaal_plus), ~ paste0(., plus, "_cohorten")) %>%
-    ## Verwijder som
-    select(-som)
-  ## Hernoemen werkt alleen indien plus=0
-  # rename_at(vars(starts_with("SUC_Diploma_nominaal_plus0")),
-  # ~ paste0("SUC_Diploma_nominaal_cohorten"))
-}
-
-## Gebruik de functie Bepaal_Nominaalplus voor de bepaling van 6 nieuwe variabelen
-## SUC_Diploma_nominaal_cohorten, SUC_Diploma_nominaal_plus1 t/m 5 _cohorten.
-## SUC_Diploma_nominaal_cohorten
-Cohorten <- Bepaal_Nominaalplus(df = Cohorten, plus = 0) %>%
-  rename(
-    SUC_Diploma_nominaal_cohorten =
-      SUC_Diploma_nominaal_plus0_cohorten
-  ) %>%
-  ## SUC_Diploma_nominaal_plus1_cohorten
-  Bepaal_Nominaalplus(plus = 1) %>%
-  ## SUC_Diploma_nominaal_plus2_cohorten
-  Bepaal_Nominaalplus(plus = 2) %>%
-  ## SUC_Diploma_nominaal_plus3_cohorten
-  Bepaal_Nominaalplus(plus = 3) %>%
-  ## SUC_Diploma_nominaal_plus4_cohorten
-  Bepaal_Nominaalplus(plus = 4) %>%
-  ## SUC_Diploma_nominaal_plus5_cohorten
-  Bepaal_Nominaalplus(plus = 5)
-
-## Bepaal nieuwe succesvariabelen
-Cohorten <- Cohorten %>%
-  ## Bepaal waarde voor herinschrijving in jaar na behalen van EOI-diploma
-  mutate(
-    INS_Herinschrijving_na_eoi_diploma =
-      case_when(
-        SUC_Diploma_aantal_jaar_cohorten == 1 ~
-          as.integer(INS_Herinschrijving_na_1_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 2 ~
-          as.integer(INS_Herinschrijving_na_2_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 3 ~
-          as.integer(INS_Herinschrijving_na_3_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 4 ~
-          as.integer(INS_Herinschrijving_na_4_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 5 ~
-          as.integer(INS_Herinschrijving_na_5_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 6 ~
-          as.integer(INS_Herinschrijving_na_6_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 7 ~
-          as.integer(INS_Herinschrijving_na_7_jaar),
-        SUC_Diploma_aantal_jaar_cohorten == 8 ~
-          as.integer(INS_Herinschrijving_na_8_jaar),
-        TRUE ~
-          NA_integer_
-      )
-  ) %>%
-  ## Bepaal of EOI-opleiding een bachelor -of masteropleiding is
-  mutate(
-    INS_BaMa =
-      if_else(
-        OPL_Code_in_jaar < 59999,
-        "B",
-        "M"
-      )
-  ) %>%
-  ## Als diploma voor Ba-EOI-opleiding behaald: bepaal of student doorstroomt
-  ## naar master. Zo ja, aangegeven: binnen VU, naar andere universiteit.
-  ## Cohorten-schattingen: waarden voor INS_Herinschrijving_na_eoi_diploma
-  ## zijn alleen geupdate voor binnen VU (her: 2, 3)
-  ## N.B. Let op dat alleen doorstroom in jaar volgend op behalen eoi-diploma
-  ## wordt meegenomen.
-  ## Hierbij is de betekenis van waarden voor INS_Herinschrijving (zie documentatie
-  ## 1cHO-Cohortbestand, met beslisboom):
-  ##      Ba (I) cohort	                     Ma (V) cohort
-  ## 1	equi-opleiding	                     equi-opleiding
-  ## 2	hogere fase binnen hoop/instelling	 gelijk fase binnen hoop/instelling
-  ## 3	hogere fase binnen instelling	     gelijk fase binnen instelling
-  ## 4	gelijk fase binnen hoop/instelling	 lagere fase binnen hoop/instelling
-  ## 5	gelijk fase binnen instelling	     lagere fase binnen instelling
-  ## 6	hogere fase binnen hoop/srtHO	     gelijk fase binnen hoop/srtHO
-  ## 7	hogere fase binnen srtHO	         gelijk fase binnen srtHO
-  ## 8	hogere fase HO (alleen HBO cohorten) komt niet voor
-  ## 9	gelijk fase binnen hoop/srtHO	     lagere fase binnen hoop/srtHO
-  ## 10	gelijk fase binnen srtHO	         lagere fase binnen srtHO
-  ## 11	gelijk fase HO	                     lagere fase HO
-  ## 12	geen inschrijvingen	                 geen inschrijvingen
-  ## 13   geen gegevens voor schatting         geen gegevens voor schatting
-  mutate(
-    SUC_Doorstroom_van_bachelor_naar_master_vu_elders_cohorten =
-      case_when(
-        SUC_Diploma_cohorten &
-          INS_BaMa == "B" &
-          INS_Herinschrijving_na_eoi_diploma %in% c("2", "3") ~
-          "Master VU",
-        SUC_Diploma_cohorten &
-          INS_BaMa == "B" &
-          INS_Herinschrijving_na_eoi_diploma %in% c("6", "7") ~
-          "Master Universiteit NL",
-        SUC_Diploma_cohorten &
-          INS_BaMa == "B" &
-          INS_Herinschrijving_na_eoi_diploma %in% c("8") ~
-          "Master HBO",
-        SUC_Diploma_cohorten &
-          INS_BaMa == "B" &
-          INS_Herinschrijving_na_eoi_diploma %in% c(
-            "1", "4", "5", "8", "9", "10", "11", "12", "13"
-          ) ~
-          "Overig"
-      )
-  ) %>%
-  ## Verwijder variabelen die niet meer nodig zijn
-  select(
-    -INS_Herinschrijving_na_eoi_diploma
-  )
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 4. SUCCESVARIABELEN MBV DIPLOMA (ON)GELIJKE FASE ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-## Bepaal succesvariabelen mbt diploma in gelijke en ongelijke fase:
-## - SUC_Diploma_ho_gelijke_fase_cohorten
-## - SUC_Diploma_ho_ongelijke_fase_cohorten
-## - SUC_Diploma_typeho_gelijke_fase_cohorten
-## - SUC_Diploma_typeho_ongelijke_fase_cohorten
-## - SUC_Diploma_ho_gelijke_fase_aantal_jaar_cohorten
-## - SUC_Diploma_ho_ongelijke_fase_aantal_jaar_cohorten
-## - SUC_Diplomajaar_gelijke_fase_cohorten
-## - SUC_Diplomajaar_ongelijke_fase_cohorten
-
-## Uitleg:
-## Gelijke fase, voorbeeld: inschrijving bachelor, diploma bachelor
-## Ongelijke fase, voorbeeld: inschrijving bachelor, diploma master
-
-## Bepaal nieuwe succesvariabelen: Diploma(jaar) gelijke en ongelijke fase in HO.
-## Hierbij is de betekenis van waarden voor INS_Examen (zie documentatie
-## 1cHO-Cohortbestand, met beslisboom):
-##      Ba (I) cohort	                    Ma (V) cohort
-## a	Equi-opl nieuwe stelsel (Ba)	    equi-opl nieuwe stelsel (Ma)
-## b	Equi-opl oude stelsel (Doc)	        equi-opl oude stelsel (Pdoc)
-## c	hoop/instelling (Ba)	            hoop/instelling (Ma)
-## d	hoop/instelling (Doc)	            hoop/instelling (PDoc)
-## e	instelling (Ba)	                    instelling (Ma)
-## f	instelling (Doc)	                instelling (PDoc)
-## g	hoop/srt_HO (Ba)	                hoop/srt_HO (Ma)
-## h	hoop/srt_HO (Doc)	                hoop/srt_HO (Pdoc)
-## i	Srt_HO (Ba)	                        srt_HO (Ma)
-## j	Srt_HO (Doc)	                    srt_HO (Pdoc)
-## k	niet srt_HO	                        niet srt_HO
-## l	master behaald zelfde instelling
-## p	master behaald andere instelling
-Cohorten <- Cohorten %>%
-  mapping_translate2(
-    "INS_BaMa",
-    "INS_Examen_gelijke_fase",
-    "SUC_Diploma_ho_gelijke_fase_cohorten"
-  )
-
-Cohorten_nieuw <- Cohorten %>%
-  mapping_translate2(
-    "INS_BaMa",
-    "INS_Examen_ongelijke_fase",
-    "SUC_Diploma_ho_ongelijke_fase_cohorten"
-  )
-
-
-Cohorten <- Cohorten %>%
-  mapping_translate(
-    "INS_Examen_gelijke_fase",
-    "SUC_Diploma_typeho_gelijke_fase_cohorten",
-    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten"
-  )
-
-Cohorten <- Cohorten %>%
-  mapping_translate(
-    "INS_Examen_ongelijke_fase",
-    "SUC_Diploma_typeho_ongelijke_fase_cohorten",
-    mapping_table_name = "Mapping_INS_Examen_INS_Doploma_cohorten"
-  )
-
-Cohorten <- Cohorten %>%
-  mutate(
-    SUC_Diploma_ho_gelijke_fase_aantal_jaar_cohorten =
-      INS_Jaar_examen_gelijke_fase
-  ) %>%
-  mutate(
-    SUC_Diploma_ho_ongelijke_fase_aantal_jaar_cohorten =
-      INS_Jaar_examen_ongelijke_fase
-  ) %>%
-  mutate(
-    SUC_Diplomajaar_gelijke_fase_cohorten =
-      INS_Eerste_jaar_opleiding_en_instelling +
-      SUC_Diploma_ho_gelijke_fase_aantal_jaar_cohorten
-  ) %>%
-  mutate(
-    SUC_Diplomajaar_ongelijke_fase_cohorten =
-      INS_Eerste_jaar_opleiding_en_instelling +
-      SUC_Diploma_ho_ongelijke_fase_aantal_jaar_cohorten
-  ) %>%
-  ## Verwijder INS_BaMa
-  select(-INS_BaMa)
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 5 MAPPPING INSCHRIJVINGSVARIABELEN ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-Cohorten <- Cohorten %>%
-  mapping_translate("INS_Soort_eerstejaars_code", "INS_Onderwijs_herkomst_cat")
-
-Cohorten <- Cohorten %>%
-  mapping_translate("INS_Soort_eerstejaars_code", "INS_Soort_eerstejaars_cat")
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## 6 SUC_Type_uitstroom ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-## Bepaal type uitstroom, door de uitval en diploma variabelen samen te voegen.
-Cohorten <- Cohorten %>%
-  mutate(
-    SUC_Type_uitstroom =
-      case_when(
-          SUC_Diploma_nominaal_plus1_tm_9_cohorten != "(Nog) geen diploma" ~
-            SUC_Diploma_nominaal_plus1_tm_9_cohorten, # SUC_Diploma_nominaal_plus_aantal_jaar_omschrijving
-          SUC_Uitval_na_jaar_1_tm_8_cohorten != "Geen uitval" ~
-            SUC_Uitval_na_jaar_1_tm_8_cohorten, #SUC_Uitval_aantal_jaar_omschrijving
-          .default = "Nog studerend"
-          )
-  )
-
-
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## BEWAAR & RUIM OP ####
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-## TODO Werkt momemteel niet, vusa github is nog in ontwikkeling
-## Controleer of er duplicaten zijn ontstaan
-assert_no_duplicates_in_group(Cohorten, c(
-  "INS_Studentnummer",
-  "INS_Eerste_jaar_opleiding_en_instelling",
-  "OPL_Code_in_jaar"
-))
 
 write_file_proj(Cohorten)
 
