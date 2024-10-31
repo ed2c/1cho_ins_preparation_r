@@ -74,8 +74,6 @@ CROHO_per_jaar <- CROHO %>%
          OPL_Opleidingsnaam_CROHO_actueel = last(OPL_Opleidingsnaam_CROHO)) %>%
   ungroup() %>%
   #'*INFO* This now includes form, so not just CROHO per year, but CROHO_form_per_year
-  # TODO Check what other differences rows with different forms still have, maybe
-  # merge forms as well
   group_by(OPL_Code_in_jaar, OPL_Instellingscode, INS_Opleidingsvorm) %>%
   mutate(
     temp_max_jaar = if_else(all(Code_stand_record == "HISTORISCH"),
