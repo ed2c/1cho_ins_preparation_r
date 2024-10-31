@@ -29,7 +29,7 @@ The goal of this repository is to prepare the data, specifically for visualizati
 
 These variables are made to provide easily insights into the (independent) characteristics of the students (aaansluiting, tussenjaar, profielen, dubbele studie). In turn, these variables help to explain the second group of variables that is made: the target variables around drop-out and study success.
 
-## Secondary goals
+## Secondary (technical) goals
 
 This project is also a demonstration of the usefullness of packages from the [vusaverse](https://github.com/vusaverse/). The vusaverse is a series of packages that provide per package specific functionality. Functions from the vusaverse used in this repository are:
 
@@ -46,18 +46,18 @@ This project is also a demonstration of the usefullness of packages from the [vu
 
 ## Usage
 
-When opening the repository renv should start to install all the packages. This can take a few minutes.
-
-A user should update the config.yml at the point of "default". The settings as seen by 'vu' and 'synthetic' can be updated with the file with the paths to data of the institution of choice, and the corresponding institution name and BRIN. Values that are set below default are inherited from synthetic and thereafter vu.
-
-Thereafter the build.R file can be run. This will result in data files in /data subfolders: audited, prepared, combined and finally exported data. A data dictonary will be added to /metadata/data_dictionary_end.
-
-As service to the user, we want to provide a results folder with only the final data and dictionary will be added as well.
+There is a special how_to.qmd file that explains how to use this repository. In addition, the user can run the build.R file
 
 ## TO DO
 
 -   [ ] Finish CEDA checklist (see below), with the exception of content-dependent validations
--   [ ] Improve folder structure
+-   [ ] Check CROHO connection with real data
+-   [ ] Improve folder structure (possibliy with functions)
+-   [ ] Expand how to
+-   [ ] Move the loading of the decoding files to the python package
+-   [ ] Adapt scripts for CROHO afterwards (still needed for nominal duration)
+-   [ ] Create assets based on user needs and 'assets' from python package
+-   [ ] Create visualisations based on the data (in Shiny?)
 
 ## CEDA general checklist
 
@@ -80,15 +80,15 @@ As service to the user, we want to provide a results folder with only the final 
 | The code runs successfully                                                                          | ✅     |
 | There is a config file for at least every institution-specific setting                              | ✅     |
 | A build file                                                                                        | ✅     |
-| An instruction file which explains the goal and context                                             | 🛠️     |
+| An instruction file which explains the goal and context                                             | ✅     |
 | clear structure in-line with best practices for data science                                        | ✅     |
-| Data dictionaries at start and end                                                                  | 🛠️     |
+| Data dictionaries at start and end                                                                  | ✅     |
 | Well styled code ([guide](https://style.tidyverse.org/))                                            | 🛠️     |
 | All files are machine-readable (.py, .R, .csv., .yaml, md, qmd).                                    | ✅     |
 | All the data files at start and end of the repository are automatically checked by validation rules | ❌     |
 | Every repository has synthetic or dummy ‘start’ data                                                | ✅     |
-| The main language in a repository is English. This goes for code, comments, and documentation.      | 🛠️     |
-| A glossary with all the column names and explanation In English is proviced                         | ⏳     |
+| The language in a repository is English. This goes for comments and documentation, not descriptions.| ✅     |
+| A glossary with all the column names and explanation In English is provided                         | ⏳     |
 
 </details>
 
