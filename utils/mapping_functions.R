@@ -137,7 +137,10 @@ mapping_translate2 <- function(df, current1, current2, new, mapping_table_name =
     }
   }
 
-  ## TODO Check that values in mapping table 'from'-column are unique
+  ## Check that values in mapping table 'from'-column are unique
+  if (nrow(mapping_table) != length(unique(mapping_table$from1))) {
+    stop("mapping table doesn't have unique values in the from1 and is thus ambiguous.")
+  }
   if (nrow(mapping_table) != length(unique(paste(mapping_table$from1, mapping_table$from2)))) {
     stop("mapping table doesn't have combined unique values in the from1 and from2 field and is thus ambiguous.")
   }
@@ -150,12 +153,6 @@ mapping_translate2 <- function(df, current1, current2, new, mapping_table_name =
 
   df$current1 <- as.character(unlist(df[, current1])) # To use data from a tibble
   df$current2 <- as.character(unlist(df[, current2]))
-
-
-  ## TODO Why is this done?
-  ## Translate to factors with sorted levels as in the csv file
-  # mapping_table$to <- factor(mapping_table$to, levels = unique(mapping_table$to))
-  # df$to <- mapping_table$to[match(df$current,mapping_table$from)]
 
   df <- df %>% dplyr::left_join(mapping_table, by = c("current1" = "from1",
                                                       "current2" = "from2"))
@@ -174,7 +171,7 @@ mapping_translate2 <- function(df, current1, current2, new, mapping_table_name =
   return(df)
 }
 
-## TODO Function is needlessly complex
+## TODO Function is needlessly complex and currently not used
 maptbl_config2suffix <- function(config_settings, mapping_table_name = "Mapping_config") {
 
   ## prepare for mapping_table_n
