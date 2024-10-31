@@ -18,7 +18,7 @@ enrollments <- read_file_proj("enrollments")
 # Set filename based on config
 file_name <- as_label(expr(enrollments))
 file_name_suffix <- "" # Add suffix if needed after adapting modify
-file_name <- paste0(file_name, file_name_suffix, "_", config::get("metadata_institution_save_name"))
+file_name <- paste0(file_name, file_name_suffix, "_", config::get("metadata_institution_name"))
 
 write_file_proj_out(enrollments, file_name)
 
