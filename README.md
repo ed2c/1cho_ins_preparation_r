@@ -56,8 +56,11 @@ There is a special how_to.qmd file that explains how to use this repository. In 
 ## TO DO
 
 -   [ ] Finish CEDA checklist (see below), with the exception of content-dependent validations
+-   [ ] Move calculated fields from combine to prepare
+-   [ ] Fix TODO's in pipeline (Control-Shift-F TODO)
+-   [ ] Add config for mapping tables for faculty and internal programme name
 -   [ ] Check CROHO connection with real data
--   [ ] Improve folder structure (possibliy with functions)
+-   [ ] Improve folder structure (possibly with functions)
 -   [ ] Expand how to
 -   [ ] Move the loading of the decoding files to the python package
 -   [ ] Adapt scripts for CROHO afterwards (still needed for nominal duration)
