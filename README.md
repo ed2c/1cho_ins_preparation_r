@@ -2,7 +2,12 @@
 
 ## Introduction
 
-Welcome to this CEDA repository. The goal of this repository is to prepare the well-known 1CijferHO institution file into a data product that is suitable for visualisation. For an example of a dashboard build upon this data, see the [following CEDA repository](https://github.com/ed2c/1cho_ins_visualisation_tableau).
+Welcome to this CEDA repository. The goal of this repository is to prepare the well-known 1CijferHO institution file into a data product that is suitable for visualisation. For an example of a dashboard build upon this data, see the [following CEDA repository](https://github.com/ed2c/1cho_ins_visualisation_tableau). Working with 1Cijfer has multiple advantages including:
+
+-   Easy to compare with other institutions due to national uniformity
+-   High quality, since it is validated by DUO and institutions themselves
+-   Elaborate documentation
+-   Over 100 variables, several from CBS and DUO so not covered by internal datasets
 
 ## Origins and context of data
 
