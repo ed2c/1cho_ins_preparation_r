@@ -1,7 +1,7 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## R code for Npuls CEDA (Centre for Educational Data Analytics)
 ## Web Page: https://edu.nl/twt84
-## Contact: corneel@surf.nl
+## Contact: corneel.denhartogh@surf.nl
 ##
 ##' *INFO*:
 ## 1) ___
@@ -12,25 +12,30 @@
 ## 1. READ ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-eencijfer_enrollments <- read_csv("data/00_raw/2023/EV299XX24.csv",
+enrollments <- read_csv(config::get("data_1cho_enrollments_file_path"),
                                      col_types = cols(
                                        .default = col_guess(),
                                        `Nationaliteit3` = col_double(),
                                        `DatumInschrijving` = col_date(format = "%Y-%m-%d")))
 
-eencijfer_naming <- read_documentation("Documentatie_eencijfer_enrollments_package.csv")
+enrollments_naming <- read_documentation("Documentatie_enrollments.csv")
 
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-## X. ASSERTIONS ####
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## 2. ASSEERT ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 # TODO Not yet able to run
-# assert_naming(eencijfer_enrollments, eencijfer_naming, "eencijfer_enrollments")
+# assert_naming(enrollments, enrollments_naming, "enrollments")
 
-## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-eencijfer_enrollments <- wrapper_translate_colnames_documentation(
-  eencijfer_enrollments,
-  eencijfer_naming
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## 3. MODIFY ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+enrollments <- wrapper_translate_colnames_documentation(
+  enrollments,
+  enrollments_naming
 )
 
 
@@ -38,7 +43,7 @@ eencijfer_enrollments <- wrapper_translate_colnames_documentation(
 ## WRITE & CLEAR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-write_file_proj(eencijfer_enrollments, "INS_eencijfer_enrollments")
+write_file_proj(enrollments)
 
 clear_script_objects()
 
