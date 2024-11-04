@@ -21,7 +21,7 @@ enrollments_start <- read_file_proj("enrollments_1",
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-### 2.1 Directly derived ####
+### 2.1 Enrollment ####
 
 # Determine based on INS_Postcode_student_1okt_peildatum and INS_Postcode_student_voor_HO whether a student
 # is living away from home: if the fields are equal for a student they are living at home, if they are different
@@ -291,6 +291,40 @@ enrollments <- enrollments %>%
       )
   )
 
+
+## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+## 2.6 Study success  ####
+enrollments <- enrollments %>%
+  group_by(INS_Studentnummer,
+           OPL_code_historisch) %>%
+  mutate(
+    INS_Aantal_inschrijvingen = n(),
+    ## Vul andere rijen van student bij opleiding met diploma
+    INS_Diploma = suppressWarnings(max(INS_Diplomajaar, na.rm = TRUE)),
+    INS_Diploma = if_else(is.infinite(INS_Diploma), NA, INS_Diploma),
+    INS_Datum_tekening_diploma = suppressWarnings(max(INS_Datum_tekening_diploma, na.rm = TRUE)),
+    INS_Datum_tekening_diploma = if_else(is.infinite(INS_Datum_tekening_diploma), NA, INS_Datum_tekening_diploma),
+    INS_Aantal_inschrijvingen_tot_diploma = if_else(!is.na(INS_Datum_tekening_diploma),
+                                                    n(),
+                                                    NA_integer_),
+    INS_Eerste_datum_inschrijving = min(INS_Datum_inschrijving, na.rm = TRUE),
+    INS_Laatste_datum_uitschrijving = max(INS_Datum_uitschrijving, na.rm = TRUE),
+    INS_Tijd_tot_diploma_in_maanden =
+      case_when(
+        INS_Datum_tekening_diploma <= INS_Eerste_datum_inschrijving ~ 0,
+        !is.na(INS_Datum_tekening_diploma) ~
+          round(time_length(interval(INS_Eerste_datum_inschrijving, INS_Datum_tekening_diploma),
+                            "months"), 0),
+        .default = NA_real_
+      ),
+    INS_Inschrijvingsjaar_max = max(INS_Inschrijvingsjaar),
+    INS_Actief_in_max_jaar = INS_Inschrijvingsjaar_max == config::get("year"),
+    INS_Uitval = if_else(is.na(INS_Datum_tekening_diploma) &
+                           !INS_Actief_in_max_jaar,
+                         TRUE,
+                         FALSE)
+  ) %>%
+  ungroup()
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## WRITE & CLEAR ####
