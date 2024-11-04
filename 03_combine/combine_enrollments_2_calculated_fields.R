@@ -24,38 +24,38 @@ enrollments <- enrollments_start %>%
   group_by(INS_Studentnummer,
            OPL_code_historisch) %>%
   mutate(
-    ## Met CROHO is studieduur toegevoegd, obv hiervan kunnen we meer variabelen maken
+    # With CROHO study duration has been added, based on this we can create more variables
     SUC_Type_uitstroom = case_when(
-      INS_Uitval == TRUE ~ paste0("Uitval jaar ", INS_Aantal_inschrijvingen), !is.na(INS_Datum_tekening_diploma) &
+      INS_Uitval == TRUE ~ paste0("Dropout year ", INS_Aantal_inschrijvingen), !is.na(INS_Datum_tekening_diploma) &
         INS_Aantal_inschrijvingen_tot_diploma == OPL_Nominale_studieduur ~
-        "Nominaal",
+        "Nominal",
       !is.na(INS_Datum_tekening_diploma) &
         INS_Aantal_inschrijvingen_tot_diploma < OPL_Nominale_studieduur ~
         paste0(
-          "Nominaal - ",
+          "Nominal - ",
           OPL_Nominale_studieduur - INS_Aantal_inschrijvingen_tot_diploma
         ),
       !is.na(INS_Datum_tekening_diploma) &
         INS_Aantal_inschrijvingen_tot_diploma > OPL_Nominale_studieduur ~
         paste0(
-          "Nominaal + ",
+          "Nominal + ",
           INS_Aantal_inschrijvingen_tot_diploma - OPL_Nominale_studieduur
         ),
       .default = NA_character_),
     SUC_Type_uitstroom_studiejaar = case_when(
-      is.na(SUC_Type_uitstroom) ~ "Nog studerend",
-      INS_Aantal_inschrijvingen != INS_Studiejaar ~ "Nog studerend",
-      is.na(INS_Datum_tekening_diploma) ~ "Uitval",
+      is.na(SUC_Type_uitstroom) ~ "Still studying",
+      INS_Aantal_inschrijvingen != INS_Studiejaar ~ "Still studying",
+      is.na(INS_Datum_tekening_diploma) ~ "Dropout",
       .default = "Diploma"
     )) %>%
   ungroup()
 
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-### 2.2 Switch binnen instelling ####
+### 2.2 Switch within institution ####
 # TODO Improve code
 #: SUC_Switch_binnen_instelling_aantal_jaar
-# Per student en opleidingsfase checken hoeveel EOI inschrijvingen icm Type_uitstroom
+# Check per student and study phase how many EOI enrollments combined with Type_uitstroom
 Switch_binnen_instelling <- enrollments %>%
   group_by(INS_Studentnummer, OPL_Code_in_jaar) %>%
   mutate(INS_Max_Inschrijvingsjaar = max(INS_Inschrijvingsjaar)) %>%
@@ -71,41 +71,40 @@ Switch_binnen_instelling <- enrollments %>%
     SUC_Type_uitstroom_studiejaar,
     INS_Max_Inschrijvingsjaar
   ) %>%
-  ## Switch houdt in dat er uitval is bij een van de studies, dus selecteer
-  ## alleen de studenten die met uitval te maken hebben
-  filter(INS_Studentnummer %in% (enrollments %>% filter(str_detect(SUC_Type_uitstroom, "Uitval")) %>%
+  # Switch means there is dropout in one of the studies, so select
+  # only the students who have experienced dropout
+  filter(INS_Studentnummer %in% (enrollments %>% filter(str_detect(SUC_Type_uitstroom, "Dropout")) %>%
                                    pull(INS_Studentnummer))) %>%
-  ## Kijk per student naar de rijen binnen de zelfde opleidingsfase (zoals B, of M)
-  ## want een switch vind zich plaats binnen een fase
-  mutate(INS_Jaar_na_uitval = if_else(str_detect(SUC_Type_uitstroom, "Uitval"),
+  # Look at the rows within the same study phase per student (like B, or M)
+  # because a switch takes place within a phase
+  mutate(INS_Jaar_na_uitval = if_else(str_detect(SUC_Type_uitstroom, "Dropout"),
                                       INS_Max_Inschrijvingsjaar + 1,
                                       NA_integer_)) %>%
   group_by(INS_Studentnummer, INS_Opleidingsfase_actueel_naam) %>%
-  ## Bereken hoeveel EOI inschrijvingen een student heeft binnen de fase
+  # Calculate how many EOI enrollments a student has within the phase
   mutate(Unieke_EOI_jaren = n_distinct(INS_Inschrijvingsjaar_EOI)) %>%
-  ## We zijn geinteresseerd in studenten met meerdere EOIs per fase
+  # We are interested in students with multiple EOIs per phase
   filter(Unieke_EOI_jaren > 1) %>%
   mutate(list_EOI = list(unique(INS_Inschrijvingsjaar_EOI)),
          list_jaar_na_uitval = list(unique(INS_Jaar_na_uitval))) %>%
   arrange(INS_Inschrijvingsjaar_EOI, INS_Inschrijvingsjaar) %>%
-  ## EOI jaar nieuwe inschrijving-EOI eerste inschrijving
+  # EOI year new enrollment - EOI first enrollment
   mutate(Rank_EOI = min_rank(INS_Inschrijvingsjaar_EOI)) %>%
   ungroup() %>%
-  ##' *INFO* Bepaling student switch is als volgt:
-  ## Als student uitvalt en gedurende een opleiding en direct het jaar erna bij een andere opleiding
-  ## in dezelfde fase start.
+  #' *INFO* Student switch determination is as follows:
+  # If student drops out during a program and starts directly the next year at another program
+  # in the same phase.
   mutate(
     SUC_Uitval_switch_studie = map2_lgl(INS_Jaar_na_uitval, list_EOI, ~.x %in% .y),
-    SUC_Uitval_switch_studiejaar = pmap_lgl(list(INS_Jaar_na_uitval, list_EOI, SUC_Type_uitstroom_studiejaar), ~str_detect(..3, "Uitval") & ..1 %in% ..2),
+    SUC_Uitval_switch_studiejaar = pmap_lgl(list(INS_Jaar_na_uitval, list_EOI, SUC_Type_uitstroom_studiejaar), ~str_detect(..3, "Dropout") & ..1 %in% ..2),
     SUC_Instroom_switch_instelling = map2_lgl(INS_Inschrijvingsjaar_EOI, list_jaar_na_uitval, ~.x %in% .y)
   ) %>%
-  ## Bereken aantal jaren tussen de start met eerste studie (eerste EOI) en de start
-  ## met de tweede studie (tweede EOI)
+  # Calculate number of years between the start of first study (first EOI) and the start
+  # of the second study (second EOI)
   mutate(
     SUC_Uitval_switch_binnen_instelling_aantal_jaar = if_else(
       SUC_Uitval_switch_studie == TRUE,
       INS_Jaar_na_uitval - INS_Inschrijvingsjaar_EOI,
-      #(INS_Inschrijvingsjaar_EOI[first(which(Rank_EOI > 1))] - INS_Inschrijvingsjaar_EOI[first(which(Rank_EOI == 1))]),
       NA_integer_)
   ) %>%
   select(INS_Studentnummer,
@@ -126,20 +125,20 @@ enrollments <- enrollments %>%
     "INS_Inschrijvingsjaar"
   ))
 
-## Maak type uitstroom variabele aan die ook switch heeft
+# Create type outflow variable that also includes switch
 enrollments <- enrollments %>%
   mutate(
     SUC_Type_uitstroom_incl_switch = case_when(
-      str_detect(SUC_Type_uitstroom, "Uitval") & SUC_Uitval_switch_studie == TRUE ~ str_replace(SUC_Type_uitstroom, "Uitval", "Switch binnen instelling na"),
-      str_detect(SUC_Type_uitstroom, "Uitval") & SUC_Uitval_switch_studie == FALSE ~ str_replace(SUC_Type_uitstroom, "Uitval", "Uitval bij instelling"),
+      str_detect(SUC_Type_uitstroom, "Dropout") & SUC_Uitval_switch_studie == TRUE ~ str_replace(SUC_Type_uitstroom, "Dropout", "Switch within institution after"),
+      str_detect(SUC_Type_uitstroom, "Dropout") & SUC_Uitval_switch_studie == FALSE ~ str_replace(SUC_Type_uitstroom, "Dropout", "Dropout from institution"),
       .default = SUC_Type_uitstroom)
   )
 
 enrollments <- enrollments %>%
   mutate(
     SUC_Type_uitstroom_studiejaar_incl_switch = case_when(
-      str_detect(SUC_Type_uitstroom_studiejaar, "Uitval") & SUC_Uitval_switch_studiejaar == TRUE ~ str_replace(SUC_Type_uitstroom_studiejaar, "Uitval", "Switch binnen instelling"),
-      str_detect(SUC_Type_uitstroom_studiejaar, "Uitval") & SUC_Uitval_switch_studiejaar == FALSE ~ str_replace(SUC_Type_uitstroom_studiejaar, "Uitval", "Uitval bij instelling"),
+      str_detect(SUC_Type_uitstroom_studiejaar, "Dropout") & SUC_Uitval_switch_studiejaar == TRUE ~ str_replace(SUC_Type_uitstroom_studiejaar, "Dropout", "Switch within institution"),
+      str_detect(SUC_Type_uitstroom_studiejaar, "Dropout") & SUC_Uitval_switch_studiejaar == FALSE ~ str_replace(SUC_Type_uitstroom_studiejaar, "Dropout", "Dropout from institution"),
       .default = SUC_Type_uitstroom_studiejaar)
   )
 
