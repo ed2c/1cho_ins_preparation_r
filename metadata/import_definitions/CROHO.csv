@@ -1,49 +1,49 @@
 names_croho,types,widths,position
-Brinnummer,character,4,1
-Brinvolgnummer,integer,2,5
-Naam onderwijsinstelling,character,70,7
+OPL_Instellingscode,character,4,1
+BRIN_volgnummer,integer,2,5
+OPL_Onderwijsinstelling,character,70,7
 Gemeentenaam,character,24,77
-Onderdeel,character,70,101
+OPL_Onderdeel_CROHO,character,70,101
 Subonderdeel,character,70,171
-Opleidingscode,integer,5,241
-Naam opleiding voluit,character,225,246
-Internationale naam,character,225,471
-Opleidingsvorm,character,8,696
-Datum begin opleiding,character,10,704
-Datum einde instroom,character,10,714
-Datum einde opleiding,character,10,724
-Studielast,integer,4,734
-Grondslag studielast,character,15,738
-Studielast VT,integer,3,753
-Propedeutisch examen,character,3,756
-Eisen te verrichten werkzaamheden,character,3,759
-Bekostiging,character,15,762
-Bekostigingsduur,integer,5,777
-Inschrijving met deficiëntie,character,3,782
+OPL_Code_in_jaar,integer,5,241
+OPL_Opleidingsnaam_CROHO,character,225,246
+Internationale_naam,character,225,471
+INS_Opleidingsvorm,character,8,696
+Datum_begin_opleiding,character,10,704
+Datum_einde_instroom,character,10,714
+Datum_einde_opleiding,character,10,724
+OPL_Nominale_studielast_EC_aantal,integer,4,734
+Grondslag_studielast,character,15,738
+Studielast_VT,integer,3,753
+Propedeutisch_examen,character,3,756
+Eisen_te_verrichten_werkzaamheden,character,3,759
+OPL_Bekostiging,character,15,762
+OPL_Bekostigingsduur,integer,5,777
+Inschrijving_met_deficientie,character,3,782
 Beroepsvereisten,character,3,785
-Datum accreditatiebesluit/melding,character,10,788
-Datum begin accreditatie,character,10,798
-Datum uitstel tot accreditatie,character,10,808
-Datum einde instroom accreditatie,character,10,818
-Datum vervallen accreditatie,character,10,828
-Datum einde afbouw accreditatie,character,10,838
-Reden uitstel,character,150,848
-Indicatie aanmelding,character,10,998
-Indicatie soort fixus,character,17,1008
-Indicatie decentrale selectie,character,3,1025
-Vervaldatum decentrale selectie,character,10,1028
-Indicatie aanvullende eisen,character,3,1038
-Afwijkende VSL code RASP,character,5,1041
-Code stand record,character,10,1046
-Bekostigingsniveau,character,5,1056
-Relatiesoort,character,20,1061
-BRIN relatie,character,4,1081
-Opl.code relatie,integer,5,1085
-Ind. Intensief progr.,character,3,1090
-Selectie-eisen Intensief progr.,character,3,1093
-Verhoogd coll.geld Intensief progr.,character,3,1096
+Datum_accreditatiebesluit,character,10,788
+Datum_begin_accreditatie,character,10,798
+Datum_uitstel_tot_accreditatie,character,10,808
+Datum_einde_instroom_accreditatie,character,10,818
+Datum_vervallen_accreditatie,character,10,828
+Datum_redelijke_termijn,character,10,838
+Reden_uitstel,character,150,848
+Indicatie_aanmelding,character,10,998
+Indicatie_soort_fixus,character,17,1008
+Indicatie_decentrale_selectie,character,3,1025
+Vervaldatum_decentrale_selectie,character,10,1028
+Indicatie_aanvullende_eisen,character,3,1038
+Afwijkende_VSL_code_RASP,character,5,1041
+Code_stand_record,character,10,1046
+OPL_Bekostigingsniveau,character,5,1056
+Relatie_soort,character,20,1061
+Relatie_BRIN,character,4,1081
+Relatie_Opleidingscode,integer,5,1085
+Indicatie_Intensief_programma,character,3,1090
+Selectie-eisen_Intensief_programma,character,3,1093
+Verhoogd_collegeld_Intensief_progr,character,3,1096
 Onderwijscapaciteit,integer,4,1099
-Versneld traject,character,3,1103
+Versneld_traject,character,3,1103
 Graad,character,20,1106
 Graadtoevoeging,character,80,1126
 Inleverdatum,character,10,1206
