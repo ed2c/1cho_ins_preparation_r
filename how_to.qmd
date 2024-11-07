@@ -30,7 +30,6 @@ if (!require("renv")) {
 In addition to renv there are some other things we need to set up. We have created a few functions to help you with this. The following code will load these functions.
 
 ```{r}
-#| echo: false
 
 # This determines the packages for renv and restores renv if needed
 source("utils/manage_packages.R")
@@ -55,14 +54,14 @@ In order to make the scripts run for every institution, we use the config packag
 For more information about config, see their [documentation](https://rstudio.github.io/config/).
 
 ```{r}
-# Set new environment
+# TODO: Set new environment
 Sys.setenv(R_CONFIG_ACTIVE="default")
 
 ```
 
-### 1. Audit 
+### 1. Audit
 
-### 2. Prepare 
+### 2. Prepare
 
 ### 3. Combine
 

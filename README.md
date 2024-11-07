@@ -57,19 +57,24 @@ Currently many of the functions are still in the
 ## TO DO
 
 -   [ ] Finish CEDA checklist (see below), with the exception of content-dependent validations
--   [ ] Move calculated fields from combine to prepare
--   [ ] Fix TODO's in pipeline (Control-Shift-F TODO)
+-   [x] Fix TODO's in pipeline (Control-Shift-F TODO)
 -   [ ] Add config for mapping tables for faculty and internal programme name
+-   [ ] Give repository a more attractive name
 -   [ ] Check CROHO connection with real data
 -   [ ] Improve folder structure (possibly with functions)
 -   [ ] Expand how to
 -   [ ] Move the loading of the decoding files to the python package
+-   [ ] Move the mapping tables to python package
+-   [ ] Improve connection with python package
 -   [ ] Adapt scripts for CROHO afterwards (still needed for nominal duration)
--   [ ] Create assets based on user needs and 'assets' from python package
+-   [ ] Create assets based on user needs
+-   [ ] Assets like p in 1 year, degrees and 'prestatieafspraken' from python package
+-   [ ] Config for user friendly variable names and description of variables
 -   [ ] Give assets a n <= 5 option
 -   [ ] Discuss cohorts with UNL
 -   [ ] Create visualisations based on the data (in Shiny?)
 -   [ ] Move renviron variables to config.yml
+
 
 ## CEDA general checklist
 
@@ -81,7 +86,7 @@ Currently many of the functions are still in the
 
 ❌ Out-of-scope
 
-⏳On roadmap, but no concrete plans
+⏳ On roadmap, but no concrete plans
 
 🛠️ Currently under construction
 
@@ -95,9 +100,9 @@ Currently many of the functions are still in the
 | An instruction file which explains the goal and context                                             | ✅     |
 | clear structure in-line with best practices for data science                                        | ✅     |
 | Data dictionaries at start and end                                                                  | ✅     |
-| Well styled code ([guide](https://style.tidyverse.org/))                                            | 🛠️     |
+| Well styled code ([guide](https://style.tidyverse.org/))                                            | ✅     |
 | All files are machine-readable (.py, .R, .csv., .yaml, md, qmd).                                    | ✅     |
-| All the data files at start and end of the repository are automatically checked by validation rules | ❌     |
+| All the data files at start and end of the repository are automatically checked by validation rules | ⏳     |
 | Every repository has synthetic or dummy ‘start’ data                                                | ✅     |
 | The language in a repository is English. This goes for comments and documentation, not descriptions.| ✅     |
 | A glossary with all the column names and explanation In English is provided                         | ⏳     |
