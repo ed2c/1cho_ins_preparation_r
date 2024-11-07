@@ -13,13 +13,13 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Import all required files:
 
-CROHO <- read_file_proj("CROHO")
+croho <- read_file_proj("croho")
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 2. MODIFY ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-CROHO <- CROHO %>%
+croho <- croho %>%
   mutate(Datum_begin_opleiding = suppressWarnings(dmy(Datum_begin_opleiding)),
          Datum_einde_opleiding = suppressWarnings(dmy(Datum_einde_opleiding)),
          Datum_einde_instroom = suppressWarnings(dmy(Datum_einde_instroom)))
@@ -27,16 +27,16 @@ CROHO <- CROHO %>%
 # Create synthetic rows based on rows VU
 if (Sys.getenv("R_CONFIG_ACTIVE") %in% c("synthetic", "default", "")) {
 
-  synthetic_rows <- CROHO %>%
+  synthetic_rows <- croho %>%
     filter(OPL_Instellingscode == "21PL") %>%
     mutate(OPL_Instellingscode = "21XX")
 
-  CROHO <- CROHO %>%
+  croho <- croho %>%
     bind_rows(synthetic_rows)
 
 }
 
-CROHO <- CROHO %>%
+croho <- croho %>%
   # Get programmes from institution
   filter(OPL_Instellingscode == config::get("metadata_institution_BRIN")) %>%
   mutate(
@@ -54,7 +54,7 @@ nMax_jaar <- config::get("year")
 # The CROHO file only contains rows per change. To create it per year, we select the last
 # change per year and then fill in missing years with the data from the last
 # completed year
-CROHO_per_jaar <- CROHO %>%
+croho_per_jaar <- croho %>%
   mutate(
     OPL_Academisch_jaar = academic_year(Datum_begin_opleiding),
     OPL_Academisch_jaar_einde_opleiding = academic_year(Datum_einde_opleiding),
@@ -89,11 +89,11 @@ CROHO_per_jaar <- CROHO %>%
   rename(OPL_Opleidingsnaam_CROHO_in_jaar = OPL_Opleidingsnaam_CROHO)
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## WRITE & CLEAR ####
+## WRITE-AND-CLEAR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-write_file_proj(CROHO)
+write_file_proj(croho)
 
-write_file_proj(CROHO_per_jaar)
+write_file_proj(croho_per_jaar)
 
 clear_script_objects()

@@ -13,7 +13,7 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 enrollments_start <- read_file_proj("enrollments_1",
-                                            dir = "02_prepared"
+                                    dir = "02_prepared"
 )
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -34,7 +34,8 @@ enrollments <- enrollments_start %>%
 
 enrollments <- enrollments %>%
   mutate(INS_Indicatie_voltijd = if_else(INS_Opleidingsvorm_code == 1,
-                                         TRUE, FALSE
+                                         TRUE,
+                                         FALSE
   ))
 
 # Determine double study institution. Use dates to filter transitions and switchers
@@ -85,7 +86,8 @@ enrollments <- enrollments %>%
     # the HAVO profiles, where available.
     INS_Vooropleiding_voor_HO_profiel_standaard_alleen_VWO =
       if_else(str_detect(INS_Vooropleiding_voor_HO_profiel, "vwo"),
-              INS_Vooropleiding_voor_HO_profiel_standaard, NA_character_
+              INS_Vooropleiding_voor_HO_profiel_standaard,
+              NA_character_
       ),
     # Per profile separately (mainly relevant for modeling, these features
     # can be better understood)
@@ -110,6 +112,7 @@ enrollments <- enrollments %>%
     "INS_Vooropleiding_voor_HO_profiel_standaard_afk",
     mapping_table_name = "Mapping_INS_Profiel_omschrijving_Profiel_afkorting"
   )
+
 enrollments <- enrollments %>%
   mapping_translate(
     "INS_Vooropleiding_voor_HO_profiel_standaard_alleen_VWO",
@@ -119,7 +122,6 @@ enrollments <- enrollments %>%
 
 # Create variable INS_Vooropleiding_voor_HO_profiel_standaard_zonder_combinatie,
 # this variable contains the common variations and thus not: combinations of nature and society
-
 # Create helper object for profiles, see Style Guide Principle F, self-documenting code
 vProfielen_levels <- c("NT",
                        "NG",
@@ -162,68 +164,52 @@ enrollments <- enrollments %>%
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ### 2.3 Study year & Deregistration Feb 1 ####
 
-# TODO adjust logic
 enrollments <- enrollments %>%
-  # Study year is calculated per student-programme combination
-  group_by(
-    INS_Studentnummer,
-    OPL_code_historisch
-  ) %>%
-  # Sort the file by enrollment year so the study year can be determined
-  arrange(
-    INS_Studentnummer,
-    OPL_code_historisch,
-    INS_Inschrijvingsjaar
-  ) %>%
+  group_by(INS_Studentnummer, OPL_code_historisch) %>%
+  # Sort by enrollment year
+  arrange(INS_Studentnummer, OPL_code_historisch, INS_Inschrijvingsjaar) %>%
   mutate(
-    # Calculate INS_Studiejaar based on position in list of unique Enrollment years (this works because
-    # it's arranged above)
-    INS_Studiejaar = match(INS_Inschrijvingsjaar, unique(INS_Inschrijvingsjaar)),
-    INS_Tussenjaren_binnen_opleiding = sum(!((min(INS_Inschrijvingsjaar):max(INS_Inschrijvingsjaar)) %in% INS_Inschrijvingsjaar)),
-    # Create a boolean variable to indicate whether the
-    # enrollment year is the EOI year
-    INS_Inschrijvingsjaar_is_EOI =
-      INS_Inschrijvingsjaar == INS_Inschrijvingsjaar_EOI
+    # Calculate study year as sequence within each group
+    INS_Studiejaar = dense_rank(INS_Inschrijvingsjaar),
+
+    # Calculate gap years within program
+    INS_Tussenjaren_binnen_opleiding = length(min(INS_Inschrijvingsjaar):max(INS_Inschrijvingsjaar)) - n(),
+
+    # Flag if current year is EOI year
+    INS_Inschrijvingsjaar_is_EOI = INS_Inschrijvingsjaar == INS_Inschrijvingsjaar_EOI
   ) %>%
   ungroup()
 
 enrollments <- enrollments %>%
+  # Calculate deregistration flags
   mutate(
-    # Determine if the deregistration in the same academic year
-    # was before February 1
-    INS_Uitschrijving_voor_1_feb = INS_Datum_uitschrijving <= as_date(
-      paste0(INS_Inschrijvingsjaar + 1, "-01-31")
-    ),
-    # Determine if this deregistration was an EOI. Only in this case is
-    # the BSA avoided
+    # Check if deregistration was before Feb 1st
+    INS_Uitschrijving_voor_1_feb = INS_Datum_uitschrijving <=
+      as_date(paste0(INS_Inschrijvingsjaar + 1, "-01-31")),
+
+    # Check if deregistration was in EOI year before Feb 1st
     INS_Uitschrijving_voor_1_feb_EOI =
-      INS_Inschrijvingsjaar_EOI ==
-      INS_Inschrijvingsjaar &
+      INS_Inschrijvingsjaar == INS_Inschrijvingsjaar_EOI &
       INS_Uitschrijving_voor_1_feb
   ) %>%
-  # Group by student/programme
+  # Process re-enrollment status
   group_by(INS_Studentnummer, OPL_code_historisch) %>%
   mutate(
+    # Check for re-enrollment after early deregistration
     INS_Herinschrijving_jaar_2_na_uitschrijving_voor_1_feb =
-      case_when(
-        # If the student has no TRUE in any year on the
-        # variable INS_EOI_uitschrijving_voor_1_feb, it becomes
-        # FALSE
-        sum(INS_Uitschrijving_voor_1_feb_EOI) == 0 ~ FALSE,
-        # For all remaining enrollments there is a case of
-        # avoiding the BSA. If the maximum study year is greater
-        # than 1, this means there has been a re-enrollment
-        max(INS_Studiejaar) > 1 ~ TRUE,
-        # in all other cases this is not the case.
-        .default = FALSE
-      )
+      sum(INS_Uitschrijving_voor_1_feb_EOI) > 0 &
+      max(INS_Studiejaar) > 1
   ) %>%
   ungroup() %>%
-  mutate(INS_Studiejaar_gecorrigeerd_uitschrijving_1_feb_EOI = case_when(
-    INS_Herinschrijving_jaar_2_na_uitschrijving_voor_1_feb == TRUE & INS_Studiejaar > 1 ~ INS_Studiejaar - 1,
-    .default = INS_Studiejaar
-  ))
-
+  # Adjust study year for early deregistrations
+  mutate(
+    INS_Studiejaar_gecorrigeerd_uitschrijving_1_feb_EOI =
+      if_else(
+        INS_Herinschrijving_jaar_2_na_uitschrijving_voor_1_feb & INS_Studiejaar > 1,
+        INS_Studiejaar - 1,
+        INS_Studiejaar
+      )
+  )
 
 ## xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ### 2.4 Gap years ####

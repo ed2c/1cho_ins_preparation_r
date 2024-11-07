@@ -13,10 +13,10 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 enrollments <- read_csv(config::get("data_1cho_enrollments_file_path"),
-                                     col_types = cols(
-                                       .default = col_guess(),
-                                       `Nationaliteit3` = col_double(),
-                                       `DatumInschrijving` = col_date(format = "%Y-%m-%d")))
+                        col_types = cols(
+                          .default = col_guess(),
+                          `Nationaliteit3` = col_double(),
+                          `DatumInschrijving` = col_date(format = "%Y-%m-%d")))
 
 enrollments_naming <- read_documentation("Documentatie_enrollments.csv")
 
@@ -40,10 +40,9 @@ enrollments <- wrapper_translate_colnames_documentation(
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## WRITE & CLEAR ####
+## WRITE-AND-CLEAR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 write_file_proj(enrollments)
 
 clear_script_objects()
-

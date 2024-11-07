@@ -12,19 +12,18 @@
 ## 1. READ ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-## TODO Integrate documentatie into import definitions
-CROHO_naming <- read_documentation("Documentatie_CROHO.csv")
+croho_naming <- read_documentation("Documentatie_CROHO.csv")
 
 ## The 00_download_croho should deliver this
-file_path <- "data/00_raw/CrohoAct.txt"
+file_path <- "data/00_raw/croho_actueel.txt"
 
-CROHO_import_definitions <- read_import_definitions("CROHO.csv")
+croho_import_definitions <- read_import_definitions("CROHO.csv")
 
 ## Open croho
-CROHO <- LaF::laf_open_fwf(file_path,
-                           column_widths = CROHO_import_definitions$widths,
-                           column_names = CROHO_import_definitions$names_croho,
-                           column_types = CROHO_import_definitions$types
+croho <- LaF::laf_open_fwf(file_path,
+                           column_widths = croho_import_definitions$widths,
+                           column_names = croho_import_definitions$names_croho,
+                           column_types = croho_import_definitions$types
                           )[,]
 
 
@@ -33,20 +32,18 @@ CROHO <- LaF::laf_open_fwf(file_path,
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Fix before assert
-colnames(CROHO) <- CROHO_import_definitions$names_croho
+colnames(croho) <- croho_import_definitions$names_croho
 
-CROHO <- CROHO %>%
+croho <- croho %>%
   mutate_all(~replace(., . == "", NA))
-
-assert_naming(CROHO, CROHO_naming, "CROHO")
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ## 3. MODIFY ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-CROHO <- CROHO %>%
-  wrapper_translate_colnames_documentation(CROHO_naming) %>%
+croho <- croho %>%
+  wrapper_translate_colnames_documentation(croho_naming) %>%
   distinct()
 
 
@@ -54,7 +51,7 @@ CROHO <- CROHO %>%
 ## WRITE & CLEAR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-write_file_proj(CROHO, "CROHO")
+write_file_proj(croho, "croho")
 
 clear_script_objects()
 

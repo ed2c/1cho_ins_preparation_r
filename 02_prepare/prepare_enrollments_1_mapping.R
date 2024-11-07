@@ -29,9 +29,15 @@ enrollments <- enrollments_start %>%
 enrollments <- enrollments %>%
   # Convert to date so we can find the min and max date
   mutate(
-    INS_Datum_inschrijving = as.Date(INS_Datum_inschrijving, format = "%d/%m/%Y", tryFormats = c("%d/%m/%Y", "%d-%m-%Y")),
-    INS_Datum_uitschrijving = as.Date(INS_Datum_uitschrijving, format = "%d/%m/%Y", tryFormats = c("%d/%m/%Y", "%d-%m-%Y")),
-  )
+    INS_Datum_inschrijving = as.Date(
+      INS_Datum_inschrijving,
+      format = "%d/%m/%Y",
+      tryFormats = c("%d/%m/%Y", "%d-%m-%Y")),
+    INS_Datum_uitschrijving = as.Date(
+      INS_Datum_uitschrijving,
+      format = "%d/%m/%Y",
+      tryFormats = c("%d/%m/%Y", "%d-%m-%Y")
+      ))
 
 # Make Indicator variables Boolean
 enrollments <- enrollments %>%
@@ -122,21 +128,24 @@ enrollments <- enrollments %>%
     "INS_Vooropleiding_voor_HO_BRIN",
     "INS_Vooropleiding_voor_HO_postcode",
     mapping_table_name = "Mapping_BRIN_4_nummer_INS_Postcode"
-  ) %>% mutate(INS_Vooropleiding_voor_HO_postcode = as.double(INS_Vooropleiding_voor_HO_postcode))
+  ) %>%
+  mutate(INS_Vooropleiding_voor_HO_postcode = as.double(INS_Vooropleiding_voor_HO_postcode))
 
 enrollments <- enrollments %>%
   mapping_translate(
     "INS_Vooropleiding_binnen_HO_BRIN",
     "INS_Vooropleiding_binnen_HO_postcode",
     mapping_table_name = "Mapping_BRIN_4_nummer_INS_Postcode"
-  ) %>% mutate(INS_Vooropleiding_binnen_HO_postcode = as.double(INS_Vooropleiding_binnen_HO_postcode))
+  ) %>%
+  mutate(INS_Vooropleiding_binnen_HO_postcode = as.double(INS_Vooropleiding_binnen_HO_postcode))
 
 enrollments <- enrollments %>%
   mapping_translate(
     "INS_Hoogste_vooropleiding_BRIN_1CHO",
     "INS_Hoogste_vooropleiding_postcode",
     mapping_table_name = "Mapping_BRIN_4_nummer_INS_Postcode"
-  ) %>% mutate(INS_Hoogste_vooropleiding_postcode = as.double(INS_Hoogste_vooropleiding_postcode))
+  ) %>%
+  mutate(INS_Hoogste_vooropleiding_postcode = as.double(INS_Hoogste_vooropleiding_postcode))
 
 enrollments <- enrollments %>%
   mapping_translate(
@@ -254,10 +263,11 @@ enrollments <- mapping_translate(
   "INS_Opleidingsvorm_code"
 )
 
-enrollments <- mapping_category(enrollments,
-                                "DEM_Leeftijd_peildatum_1_oktober",
-                                "DEM_Leeftijd_peildatum_1_oktober_cat",
-                                mapping_table_name = "Mapping_DEM_Leeftijd_cat"
+enrollments <- mapping_category(
+  enrollments,
+  "DEM_Leeftijd_peildatum_1_oktober",
+  "DEM_Leeftijd_peildatum_1_oktober_cat",
+  mapping_table_name = "Mapping_DEM_Leeftijd_cat"
 )
 
 enrollments <- mapping_translate(

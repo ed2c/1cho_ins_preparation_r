@@ -9,9 +9,11 @@
 ## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Get the croho ascii file from DUO
-link_croho <- rvest::read_html("https://duo.nl/zakelijk/hoger-onderwijs/studentenadministratie/croho.jsp") %>%
-  rvest::html_nodes(css = "a:contains(ASCI)") %>%
-  rvest::html_attr("href") %>%
+link_croho <- read_html(
+  "https://duo.nl/zakelijk/hoger-onderwijs/studentenadministratie/croho.jsp"
+  ) %>%
+  html_nodes(css = "a:contains(ASCI)") %>%
+  html_attr("href") %>%
   paste0("https://duo.nl", .)
 
 # Determine the Croho network directory
@@ -23,7 +25,7 @@ file_path_zip <- paste0(raw_data_dir, "/", lubridate::ymd(lubridate::today()), "
 invisible(httr::GET(link_croho, httr::write_disk(file_path_zip, overwrite = TRUE)))
 
 # Unzip the file, it is cumulative so we overwrite is fine
-unzip(file_path_zip, files = "CrohoAct.txt", exdir = raw_data_dir, overwrite = TRUE)
+unzip(file_path_zip, files = "croho_actueel.txt", exdir = raw_data_dir, overwrite = TRUE)
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

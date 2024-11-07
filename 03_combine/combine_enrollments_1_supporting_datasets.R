@@ -14,7 +14,7 @@
 
 enrollments_start <- read_file_proj("enrollments")
 
-CROHO_per_jaar <- read_file_proj("CROHO_per_jaar")
+croho_per_jaar <- read_file_proj("croho_per_jaar")
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -27,7 +27,7 @@ CROHO_per_jaar <- read_file_proj("CROHO_per_jaar")
 # TODO Not entirely sure about this. When I keep academic year and join additionally on
 # INS_Inschrijvingsjaar and OPL_Academisch_jaar I get NA values with synthetic data, but maybe not
 # with real data.
-CROHO_per_jaar_enrollments <- CROHO_per_jaar %>%
+croho_per_jaar_enrollments <- croho_per_jaar %>%
   select(
     OPL_Opleidingsnaam_CROHO_actueel,
     OPL_Code_in_jaar,
@@ -45,7 +45,7 @@ CROHO_per_jaar_enrollments <- CROHO_per_jaar %>%
   distinct()
 
 enrollments <- enrollments_start %>%
-  left_join(CROHO_per_jaar_enrollments,
+  left_join(croho_per_jaar_enrollments,
             by = c("OPL_Code_in_jaar" #, # remove this if you want to join
                    # on academic year as well
                    # "INS_Inschrijvingsjaar" = "OPL_Academisch_jaar"
@@ -54,7 +54,7 @@ enrollments <- enrollments_start %>%
 
 
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## WRITE & CLEAR ####
+## WRITE-AND-CLEAR ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
