@@ -1,23 +1,15 @@
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## Inladen Packages.R
+## R code for Npuls CEDA (Centre for Educational Data Analytics)
+## Web Page: https://edu.nl/twt84
+## Contact: corneel.denhartogh@surf.nl
+##
+##' *INFO*:
+## 1) ___
+##
+## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-## R code voor Student Analytics Vrije Universiteit Amsterdam
-## Copyright 2021 VU
-## Web Page: http://www.vu.nl
-## Contact: vu-analytics@vu.nl
-## Verspreiding buiten de VU: Ja
-##
-## Doel: In dit script worden alle benodigde packages geinstalleerd als ze nog
-## niet geinstalleerd zijn, vervolgens worden deze ingeladen.
-##
-## Afhankelijkheden: Geen
-##
-## Datasets: Geen
-##
-## Opmerkingen:
-## 1) Geen
-##
-## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## 1. SET-UP ####
 ## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # In order for load
@@ -42,6 +34,7 @@ packages_cran <- c(
   "purrr",          # Work with functions and vectors
   "readxl",         # Read xlsx
   "readr",          # Read data (csv, tsv, and fwf)
+  "rvest",          # Read html
   "slackr",         # Send messages in Slack
   "stringi",        # Work with other strings
   "stringr",        # Work with strings
@@ -70,9 +63,13 @@ packages <- c(packages_base, packages_cran, packages_github)
 packages <- packages[packages != "config"]
 packages_renv <- c(packages_cran, packages_github)
 
-# Configure renv
-#renv::update("vusa")
 
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## 2. EXECUTE ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Configure renv
+# renv::update("vusa")
 
 options(renv.snapshot.filter = function(project) {
   return(packages_renv)
@@ -90,5 +87,9 @@ suppressMessages(purrr::walk(packages, ~library(.x,
                                                 character.only = TRUE,
                                                 warn.conflicts = warn_conflicts)))
 
+
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## WRITE-AND-CLEAR ####
+## +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 clear_script_objects()
